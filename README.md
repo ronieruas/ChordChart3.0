@@ -1,88 +1,61 @@
-Projeto "ChordChart Pro" 3.0- Guia de Implantação
-Este guia detalha a estrutura do projeto e como implantá-lo como um serviço web usando Docker em um servidor (como uma VM Proxmox).
-Essa Atualização
-Backend Fortalecido: Utilizei a biblioteca Flask-Login para gerenciar sessões de usuário de forma segura. Todas as rotas da API que lidam com músicas (/api/songs/...) agora exigem que o usuário esteja logado.
-Banco de Dados de Usuários: Criei uma nova tabela no banco de dados para armazenar nomes de usuário e senhas criptografadas (usando werkzeug para hashing, a prática recomendada).
-Frontend com Tela de Login: A aplicação agora verifica se o usuário está logado. Se não estiver, ela exibe uma tela de login em vez do painel principal.
-Criação de Usuário Segura: Para evitar senhas padrão, adicionei um script que você executa uma vez para criar seu primeiro usuário administrador de forma segura.
-Logout: Adicionei um botão de "Sair" na interface.
-A seguir, apresento a nova estrutura e o código atualizado.
-
-Estrutura dos Arquivos
-Para manter o projeto organizado no GitHub, use a seguinte estrutura.
-
-//chordchart-pro/
-|-- docker-compose.yml       # ATUALIZADO
-|-- nginx.conf               # (Sem alterações)
-|-- .env                     # NOVO: Para variáveis de ambiente seguras
-|
-|-- /app/
-|   |-- index.html           # ATUALIZADO
-|
-|-- /backend/
-|   |-- Dockerfile           # (Sem alterações)
-|   |-- app.py               # ATUALIZADO
-|   |-- requirements.txt     # ATUALIZADO
-|   |-- create_user.py       # NOVO: Script para criar o primeiro usuário
-|
-|-- README.md               # Este arquivo
-
-Conteúdo dos Arquivos de Configuração
-Copie e cole o conteúdo abaixo nos arquivos correspondentes.
-
-
-Clone seu Projeto do GitHub: Após fazer o login novamente, clone o repositório que você criou.
-
-# Instale o git se ainda não tiver
-sudo apt install git -y
-
-# Clone seu repositório
-git clone https://github.com/SEU_USUARIO/chordchart-pro.git
-
-# Entre no diretório do projeto
-cd chordchart-pro
-
-Inicie a Aplicação: Dentro do diretório principal do projeto (onde está o docker-compose.yml), execute o comando:
-
-docker-compose up -d
-
-O -d (detached) faz com que o container rode em segundo plano.
-
-Acesse a Aplicação: Pronto! Agora você pode acessar sua ferramenta no navegador usando o IP da sua VM Proxmox e a porta que você mapeou (8080).
-http://IP_DA_SUA_VM:8080
-
-# ChordChart Pro
+# ChordChart Pro 3.0
 
 Uma aplicação web avançada para criação e gerenciamento de cifras musicais, com sistema de login seguro e funcionalidades de setlist.
 
-## 🔒 **SEGURANÇA - CONFIGURAÇÃO OBRIGATÓRIA**
+## 🚀 **Instalação Rápida**
 
-### ⚠️ **IMPORTANTE: Configure a segurança antes de usar em produção!**
+### Pré-requisitos
+- Docker e Docker Compose instalados
+- Git
 
-1. **Copie o arquivo de configuração:**
-   ```bash
-   cp env.example .env
-   ```
+### 1. Clone o repositório
+```bash
+git clone https://github.com/SEU_USUARIO/chordchart-pro.git
+cd chordchart-pro
+```
 
-2. **Gere uma SECRET_KEY segura:**
-   ```bash
-   python -c "import secrets; print(secrets.token_hex(32))"
-   ```
-   Edite o arquivo `.env` e substitua `your-super-secret-key-change-this-in-production-123456789` pela chave gerada.
+### 2. Configure as variáveis de ambiente
+```bash
+cp env.example .env
+```
 
-3. **Configure HTTPS para produção:**
+### 3. Gere uma SECRET_KEY segura
+```bash
+python3 -c "import secrets; print(secrets.token_hex(32))"
+```
+Edite o arquivo `.env` e substitua `your-super-secret-key-change-this-in-production-123456789` pela chave gerada.
+
+### 4. Inicie a aplicação
+```bash
+docker-compose up -d
+```
+
+### 5. Crie o usuário administrador
+```bash
+cd backend
+python3 create_user.py admin --generate-password
+```
+**IMPORTANTE:** Salve a senha gerada em um local seguro!
+
+### 6. Acesse a aplicação
+Abra seu navegador e acesse: `http://localhost:8080`
+
+## 🔒 **Configuração de Segurança**
+
+### Para Produção
+1. **Configure HTTPS:**
    - Use o arquivo `nginx-ssl.conf` como base
    - Configure seus certificados SSL
    - Ative `FLASK_ENV=production` no `.env`
 
-4. **Crie o usuário administrador:**
-   ```bash
-   cd backend
-   python create_user.py admin --generate-password
-   ```
+2. **Altere a SECRET_KEY:**
+   - Nunca use a chave padrão em produção
+   - Gere uma nova chave segura
 
-### 🛡️ **Melhorias de Segurança Implementadas:**
+3. **Configure CORS:**
+   - Altere `ALLOWED_ORIGINS` no `.env` para seus domínios específicos
 
+### Melhorias de Segurança Implementadas:
 - ✅ **Rate Limiting**: Máximo 5 tentativas de login por IP em 5 minutos
 - ✅ **Validação de Senha**: Mínimo 8 caracteres, maiúscula, minúscula e número
 - ✅ **Headers de Segurança**: XSS, CSRF, Clickjacking protection
@@ -90,3 +63,112 @@ Uma aplicação web avançada para criação e gerenciamento de cifras musicais,
 - ✅ **Validação de Entrada**: Sanitização de dados de entrada
 - ✅ **Criptografia**: Senhas hasheadas com Werkzeug
 - ✅ **Proteção contra Força Bruta**: Bloqueio temporário após falhas
+
+## 🛠️ **Estrutura do Projeto**
+
+```
+chordchart-pro/
+├── docker-compose.yml       # Configuração Docker
+├── nginx.conf              # Configuração Nginx
+├── nginx-ssl.conf          # Configuração Nginx com SSL
+├── env.example             # Exemplo de variáveis de ambiente
+├── .gitignore              # Arquivos ignorados pelo Git
+├── README.md               # Este arquivo
+│
+├── app/                    # Frontend
+│   ├── index.html          # Interface principal
+│   └── Dockerfile          # Docker do frontend
+│
+└── backend/                # Backend Flask
+    ├── app.py              # Aplicação principal
+    ├── requirements.txt    # Dependências Python
+    ├── Dockerfile          # Docker do backend
+    ├── create_user.py      # Script para criar usuários
+    ├── reset_admin.py      # Script para resetar admin
+    └── test_login.py       # Script para testar login
+```
+
+## 🔧 **Comandos Úteis**
+
+### Gerenciamento de Containers
+```bash
+# Iniciar aplicação
+docker-compose up -d
+
+# Parar aplicação
+docker-compose down
+
+# Ver logs
+docker-compose logs backend
+docker-compose logs frontend
+
+# Rebuild após mudanças
+docker-compose down
+docker-compose up -d --build
+```
+
+### Gerenciamento de Usuários
+```bash
+# Criar novo usuário
+cd backend
+python3 create_user.py NOME_USUARIO --generate-password
+
+# Resetar usuário admin
+python3 reset_admin.py
+
+# Testar login
+python3 test_login.py
+```
+
+### Verificar Banco de Dados
+```bash
+cd backend
+python3 check_db.py
+```
+
+## 🐛 **Solução de Problemas**
+
+### Login não funciona
+1. Verifique se o usuário existe: `python3 check_db.py`
+2. Teste a autenticação: `python3 test_login.py`
+3. Verifique os logs: `docker-compose logs backend`
+4. Confirme que o `.env` está configurado corretamente
+
+### Aplicação volta para login após ações
+1. Verifique se `FLASK_ENV=development` no `.env`
+2. Confirme que `SESSION_COOKIE_SECURE=false`
+3. Verifique se `ALLOWED_ORIGINS=*` ou inclui seu domínio
+4. Reinicie os containers: `docker-compose down && docker-compose up -d`
+
+### Erro de CORS
+1. Verifique `ALLOWED_ORIGINS` no `.env`
+2. Confirme que o frontend está apontando para o backend correto
+3. Verifique se não há bloqueio de cookies no navegador
+
+## 📝 **Funcionalidades**
+
+- 🔐 **Sistema de Login Seguro**
+- 📝 **Criação e Edição de Cifras**
+- 📋 **Gerenciamento de Setlists**
+- 🔍 **Busca e Filtros**
+- 👥 **Múltiplos Usuários**
+- 🎵 **Suporte a Diferentes Tons**
+
+## 🤝 **Contribuição**
+
+1. Faça um fork do projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
+3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
+4. Push para a branch (`git push origin feature/AmazingFeature`)
+5. Abra um Pull Request
+
+## 📄 **Licença**
+
+Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
+
+## 🆘 **Suporte**
+
+Se você encontrar problemas ou tiver dúvidas:
+1. Verifique a seção "Solução de Problemas" acima
+2. Abra uma issue no GitHub
+3. Consulte os logs da aplicação
