@@ -144,6 +144,8 @@ def init_db():
                 cursor.execute("ALTER TABLE songs ADD COLUMN user_id INTEGER REFERENCES users(id)")
             if 'is_public' not in columns:
                 cursor.execute("ALTER TABLE songs ADD COLUMN is_public BOOLEAN NOT NULL DEFAULT 0")
+            if 'capo_position' not in columns:
+                cursor.execute("ALTER TABLE songs ADD COLUMN capo_position INTEGER NOT NULL DEFAULT 0")
         except Exception as e:
             print(f"Aviso: {e}")
             
@@ -341,8 +343,8 @@ def get_songs_filtered():
 def add_song():
     data = request.get_json()
     conn = get_db()
-    conn.execute('INSERT INTO songs (title, content, original_key, user_id, is_public) VALUES (?, ?, ?, ?, ?)',
-                   (data.get('title'), data.get('content'), data.get('original_key'), current_user.id, data.get('is_public', False)))
+    conn.execute('INSERT INTO songs (title, content, original_key, user_id, is_public, capo_position) VALUES (?, ?, ?, ?, ?, ?)',
+                   (data.get('title'), data.get('content'), data.get('original_key'), current_user.id, data.get('is_public', False), data.get('capo_position', 0)))
     conn.commit()
     conn.close()
     return jsonify({"message": "Música salva com sucesso!"}), 201
@@ -368,7 +370,7 @@ def delete_song(song_id):
 @login_required
 def get_song(song_id):
     db = get_db()
-    song = db.execute('SELECT content FROM songs WHERE id = ?', (song_id,)).fetchone()
+    song = db.execute('SELECT content, capo_position FROM songs WHERE id = ?', (song_id,)).fetchone()
     db.close()
     if song is None: return jsonify({'error': 'Song not found'}), 404
     return jsonify(dict(song))
