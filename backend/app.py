@@ -494,9 +494,16 @@ def add_song_to_setlist(setlist_id):
         conn.close()
         return jsonify({"error": "ID da música é obrigatório."}), 400
 
+    # Convert song_id to int and handle potential conversion errors
+    try:
+        song_id_int = int(song_id)
+    except (ValueError, TypeError):
+        conn.close()
+        return jsonify({"error": f"ID de música inválido: {song_id}"}), 400
+
     existing = conn.execute(
         'SELECT id FROM setlist_songs WHERE setlist_id = ? AND song_id = ?',
-        (setlist_id, song_id)
+        (setlist_id, song_id_int)
     ).fetchone()
     if existing:
         conn.close()
@@ -507,7 +514,7 @@ def add_song_to_setlist(setlist_id):
 
     conn.execute(
         'INSERT INTO setlist_songs (setlist_id, song_id, position) VALUES (?, ?, ?)',
-        (setlist_id, song_id, next_position)
+        (setlist_id, song_id_int, next_position)
     )
     conn.commit()
     conn.close()
@@ -561,9 +568,26 @@ def update_setlist_order(setlist_id):
     try:
         # Usar uma transação para garantir a integridade dos dados
         for index, song_id in enumerate(song_ids):
+            # Convert song_id to int and handle potential conversion errors
+            try:
+                song_id_int = int(song_id)
+            except (ValueError, TypeError):
+                conn.close()
+                return jsonify({"error": f"ID de música inválido: {song_id}"}), 400
+            
+            # Check if the song exists in the setlist before updating
+            existing_song = conn.execute(
+                "SELECT id FROM setlist_songs WHERE setlist_id = ? AND song_id = ?",
+                (setlist_id, song_id_int)
+            ).fetchone()
+            
+            if not existing_song:
+                conn.close()
+                return jsonify({"error": f"Música com ID {song_id_int} não encontrada no setlist"}), 404
+            
             conn.execute(
                 "UPDATE setlist_songs SET position = ? WHERE setlist_id = ? AND song_id = ?",
-                (index, setlist_id, int(song_id))
+                (index, setlist_id, song_id_int)
             )
         conn.commit()
     except sqlite3.Error as e:
@@ -573,6 +597,73 @@ def update_setlist_order(setlist_id):
     
     conn.close()
     return jsonify({"message": "Ordem do setlist atualizada com sucesso."})
+
+@app.route('/api/setlists/<int:setlist_id>/visibility', methods=['PUT'])
+@login_required
+def update_setlist_visibility(setlist_id):
+    """Atualiza o status público/privado de um setlist."""
+    conn = get_db()
+    
+    setlist = conn.execute('SELECT user_id FROM setlists WHERE id = ?', (setlist_id,)).fetchone()
+    if not setlist:
+        conn.close()
+        return jsonify({"error": "Setlist não encontrado."}), 404
+    if setlist['user_id'] != current_user.id:
+        conn.close()
+        return jsonify({"error": "Acesso não autorizado para modificar este setlist."}), 403
+
+    data = request.get_json()
+    is_public = data.get('is_public')
+    
+    if not isinstance(is_public, bool):
+        conn.close()
+        return jsonify({"error": "Payload inválido: 'is_public' deve ser um booleano."}), 400
+
+    try:
+        conn.execute(
+            'UPDATE setlists SET is_public = ? WHERE id = ?',
+            (is_public, setlist_id)
+        )
+        conn.commit()
+        conn.close()
+        return jsonify({"message": "Visibilidade do setlist atualizada com sucesso.", "is_public": is_public})
+    except sqlite3.Error as e:
+        conn.close()
+        return jsonify({"error": f"Erro no banco de dados: {e}"}), 500
+
+@app.route('/api/setlists/<int:setlist_id>/available-songs', methods=['GET'])
+@login_required
+def get_available_songs_for_setlist(setlist_id):
+    """Busca músicas disponíveis para adicionar ao setlist (músicas do usuário que ainda não estão no setlist)."""
+    conn = get_db()
+    
+    setlist = conn.execute('SELECT user_id FROM setlists WHERE id = ?', (setlist_id,)).fetchone()
+    if not setlist:
+        conn.close()
+        return jsonify({"error": "Setlist não encontrado."}), 404
+    if setlist['user_id'] != current_user.id:
+        conn.close()
+        return jsonify({"error": "Acesso não autorizado para este setlist."}), 403
+
+    try:
+        # Busca músicas do usuário que não estão no setlist
+        available_songs = conn.execute('''
+            SELECT s.id, s.title, s.original_key
+            FROM songs s
+            WHERE s.user_id = ?
+            AND s.id NOT IN (
+                SELECT ss.song_id 
+                FROM setlist_songs ss 
+                WHERE ss.setlist_id = ?
+            )
+            ORDER BY s.title COLLATE NOCASE ASC
+        ''', (current_user.id, setlist_id)).fetchall()
+        
+        conn.close()
+        return jsonify([dict(song) for song in available_songs])
+    except sqlite3.Error as e:
+        conn.close()
+        return jsonify({"error": f"Erro no banco de dados: {e}"}), 500
 
 
 init_db()

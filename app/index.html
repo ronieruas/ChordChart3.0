@@ -145,6 +145,19 @@
         </form>
     </dialog>
 
+    <dialog id="add-songs-to-setlist-modal" class="p-6 rounded-lg shadow-xl border w-full max-w-lg">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-bold">Adicionar Músicas ao Setlist</h3>
+            <button class="cancel-btn text-2xl font-light">&times;</button>
+        </div>
+        <div id="available-songs-list" class="bg-gray-50 p-2 rounded-md h-80 overflow-y-auto border mb-4">
+            <p class="text-center text-gray-400 text-sm p-4">Carregando músicas disponíveis...</p>
+        </div>
+        <div class="flex justify-end gap-4">
+            <button type="button" class="cancel-btn py-2 px-4 bg-gray-200 rounded-md">Fechar</button>
+        </div>
+    </dialog>
+
     <script>
     // --- STATE & DOM ---
     const state = { songStructure: [], transposeAmount: 0, currentView: 'chart', isTwoColumns: false, capoPosition: 0 };
@@ -160,7 +173,9 @@
         openSetlistsBtn: document.getElementById('open-setlists-btn'), setlistsModal: document.getElementById('setlists-modal'), setlistsModalTitle: document.getElementById('setlists-modal-title'), setlistsTabsNav: document.getElementById('setlists-tabs-nav'), modalSetlistsList: document.getElementById('modal-setlists-list'), mySetlistsTab: document.getElementById('my-setlists-tab'), publicSetlistsTab: document.getElementById('public-setlists-tab'), createSetlistForm: document.getElementById('create-setlist-form'), createSetlistFeedback: document.getElementById('create-setlist-feedback'), setlistsViewContainer: document.getElementById('setlists-view-container'),
         addToSetlistModal: document.getElementById('add-to-setlist-modal'), 
         addToSetlistForm: document.getElementById('add-to-setlist-form'), 
-        setlistSelect: document.getElementById('setlist-select')
+        setlistSelect: document.getElementById('setlist-select'),
+        addSongsToSetlistModal: document.getElementById('add-songs-to-setlist-modal'),
+        availableSongsList: document.getElementById('available-songs-list')
     };
 
     // --- CORE LOGIC ---
@@ -333,6 +348,49 @@
             dom.setlistsViewContainer.after(listContainer); 
             listContainer.before(backButton);
 
+            // Adicionar controles de visibilidade e adicionar músicas
+            if (data.is_owner) {
+                const controlsDiv = document.createElement('div');
+                controlsDiv.className = 'flex justify-between items-center p-3 bg-gray-50 border-b';
+                
+                // Controle de visibilidade
+                const visibilityDiv = document.createElement('div');
+                visibilityDiv.className = 'flex items-center gap-2';
+                
+                const visibilityLabel = document.createElement('label');
+                visibilityLabel.className = 'text-sm font-medium text-gray-700';
+                visibilityLabel.textContent = 'Público:';
+                visibilityDiv.appendChild(visibilityLabel);
+                
+                const visibilityToggle = document.createElement('input');
+                visibilityToggle.type = 'checkbox';
+                visibilityToggle.className = 'h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500';
+                visibilityToggle.checked = data.is_public;
+                visibilityToggle.onchange = async () => {
+                    try {
+                        await fetchApi(`/api/setlists/${setlistId}/visibility`, {
+                            method: 'PUT',
+                            body: { is_public: visibilityToggle.checked }
+                        });
+                    } catch (error) {
+                        alert(`Erro ao atualizar visibilidade: ${error.message}`);
+                        visibilityToggle.checked = !visibilityToggle.checked; // Reverter mudança
+                    }
+                };
+                visibilityDiv.appendChild(visibilityToggle);
+                
+                controlsDiv.appendChild(visibilityDiv);
+                
+                // Botão para adicionar músicas
+                const addSongsBtn = document.createElement('button');
+                addSongsBtn.className = 'bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded text-sm';
+                addSongsBtn.textContent = 'Adicionar Músicas';
+                addSongsBtn.onclick = () => handleOpenAddSongsToSetlistModal(setlistId);
+                controlsDiv.appendChild(addSongsBtn);
+                
+                listContainer.appendChild(controlsDiv);
+            }
+
             if (data.songs && data.songs.length > 0) {
                 data.songs.forEach(song => {
                     const songLi = document.createElement('li');
@@ -369,7 +427,10 @@
                     listContainer.appendChild(songLi);
                 });
             } else {
-                listContainer.innerHTML = '<p class="text-center text-gray-400 text-sm p-4">Este setlist está vazio. Adicione músicas através do modal "Abrir Músicas Salvas".</p>';
+                const emptyMessage = document.createElement('p');
+                emptyMessage.className = 'text-center text-gray-400 text-sm p-4';
+                emptyMessage.textContent = 'Este setlist está vazio.';
+                listContainer.appendChild(emptyMessage);
             }
 
             if (data.is_owner) {
@@ -379,7 +440,7 @@
                     ghostClass: 'sortable-ghost',
                     onEnd: async function (evt) {
                         const items = Array.from(listContainer.children);
-                        const songIds = items.map(item => item.dataset.songId);
+                        const songIds = items.map(item => parseInt(item.dataset.songId)).filter(id => !isNaN(id));
                         try {
                             await fetchApi(`/api/setlists/${setlistId}/songs/order`, {
                                 method: 'PUT',
@@ -433,6 +494,63 @@
             alert('Música adicionada com sucesso!');
         } catch (error) {
             alert(`Erro: ${error.message}`);
+        }
+    }
+
+    async function handleOpenAddSongsToSetlistModal(setlistId) {
+        try {
+            const availableSongs = await fetchApi(`/api/setlists/${setlistId}/available-songs`);
+            dom.availableSongsList.innerHTML = '';
+            
+            if (!availableSongs || availableSongs.length === 0) {
+                dom.availableSongsList.innerHTML = '<p class="text-center text-gray-400 text-sm p-4">Você não tem músicas salvas disponíveis para adicionar a este setlist.</p>';
+            } else {
+                availableSongs.forEach(song => {
+                    const songLi = document.createElement('li');
+                    songLi.className = 'flex justify-between items-center p-2 hover:bg-indigo-100 rounded cursor-pointer add-song-to-setlist-btn';
+                    songLi.dataset.songId = song.id;
+                    songLi.dataset.setlistId = setlistId;
+                    
+                    const titleSpan = document.createElement('span');
+                    titleSpan.textContent = song.title;
+                    songLi.appendChild(titleSpan);
+                    
+                    const addIcon = document.createElement('i');
+                    addIcon.className = 'fas fa-plus text-indigo-600';
+                    songLi.appendChild(addIcon);
+                    
+                    songLi.onclick = () => handleAddSongToSetlist(song.id, setlistId, song.title);
+                    dom.availableSongsList.appendChild(songLi);
+                });
+            }
+            
+            dom.addSongsToSetlistModal.showModal();
+        } catch (error) {
+            alert(`Erro ao carregar músicas disponíveis: ${error.message}`);
+        }
+    }
+
+    async function handleAddSongToSetlist(songId, setlistId, songTitle) {
+        try {
+            await fetchApi(`/api/setlists/${setlistId}/songs`, {
+                method: 'POST',
+                body: { song_id: songId }
+            });
+            
+            // Remover a música da lista de disponíveis
+            const songElement = dom.availableSongsList.querySelector(`[data-song-id="${songId}"]`);
+            if (songElement) {
+                songElement.remove();
+            }
+            
+            // Se não há mais músicas disponíveis, fechar o modal
+            if (dom.availableSongsList.children.length === 0) {
+                dom.addSongsToSetlistModal.close();
+            }
+            
+            alert(`Música "${songTitle}" adicionada com sucesso!`);
+        } catch (error) {
+            alert(`Erro ao adicionar música: ${error.message}`);
         }
     }
 
@@ -612,6 +730,10 @@
         if(dom.publicSetlistsTab) dom.publicSetlistsTab.addEventListener('click', () => { dom.publicSetlistsTab.classList.add('active'); dom.mySetlistsTab.classList.remove('active'); loadSetlists('public'); });
         if(dom.modalSetlistsList) dom.modalSetlistsList.addEventListener('click', handleSetlistsListClick);
         if(dom.addToSetlistForm) dom.addToSetlistForm.addEventListener('submit', handleAddToSetlistSubmit);
+        if(dom.addSongsToSetlistModal) {
+            const cancelBtns = dom.addSongsToSetlistModal.querySelectorAll('.cancel-btn');
+            cancelBtns.forEach(btn => btn.addEventListener('click', () => dom.addSongsToSetlistModal.close()));
+        }
 
         // Password Visibility Toggle
         document.body.addEventListener('click', function(event) {
