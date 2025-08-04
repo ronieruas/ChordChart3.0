@@ -12,9 +12,40 @@
         body { font-family: 'Inter', sans-serif; }
         .chord-output, .lyric-output, .summary-chord { font-family: 'Roboto Mono', monospace; line-height: 1.6; white-space: pre; }
         .chord-output, .summary-chord { font-weight: 700; }
-        #outputArea { transition: column-count 0.3s ease-in-out; }
-        .output-container.two-columns { column-count: 2; column-gap: 2.5rem; }
-        .section-container { break-inside: avoid; }
+        #outputArea { 
+            transition: column-count 0.3s ease-in-out; 
+            max-height: 60vh; 
+            overflow-y: auto; 
+            padding: 1rem;
+        }
+        .output-container.two-columns { 
+            display: grid !important;
+            grid-template-columns: 1fr 1fr !important;
+            gap: 1rem !important;
+            align-items: start !important;
+        }
+        .column-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        /* Garantir que as seções não quebrem entre colunas na tela */
+        .section-container { 
+            break-inside: avoid !important; 
+            page-break-inside: avoid !important;
+            margin-bottom: 0.5rem !important;
+        }
+        
+        /* Na impressão, permitir quebras para economizar páginas */
+        @media print {
+            .section-container { 
+                break-inside: auto !important; 
+                page-break-inside: auto !important;
+            }
+        }
+        .section-container h3 {
+            margin-bottom: 0.5rem !important;
+        }
         #view-wrapper { transition: all 0.3s ease-in-out; border: 1px solid #e5e7eb; margin: auto; }
         .view-tablet { width: 768px; }
         .view-mobile { width: 425px; }
@@ -45,8 +76,24 @@
             body { background-color: white !important; margin: 0; padding: 0; } 
             main { padding: 0 !important; } 
             #view-wrapper { width: 100% !important; border: none !important; box-shadow: none !important; padding: 1cm !important; } 
-            #outputArea { padding: 0 !important; box-shadow: none !important; border: none !important; } 
-            .output-container.two-columns { column-count: 2 !important; } 
+            #outputArea { 
+                padding: 0 !important; 
+                box-shadow: none !important; 
+                border: none !important; 
+                max-height: none !important;
+                overflow: visible !important;
+            } 
+            .output-container.two-columns { 
+                display: grid !important;
+                grid-template-columns: 1fr 1fr !important;
+                gap: 1rem !important;
+                align-items: start !important;
+            }
+            .column-container {
+                display: flex !important;
+                flex-direction: column !important;
+                gap: 0.5rem !important;
+            } 
             h2, h3 { color: black !important; } 
             .chord-output, .summary-chord { color: #1e40af !important; } 
             .lyric-output { color: #111827 !important; } 
@@ -70,6 +117,7 @@
                 <div class="flex gap-2 mt-2">
                     <button id="generateButton" class="flex-grow bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md shadow-sm">Gerar</button>
                     <button id="saveButton" class="bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded-md shadow-sm">Salvar</button>
+                    <button id="saveAsButton" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-md shadow-sm">Salvar Como</button>
                     <button id="clearButton" class="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-md shadow-sm">Limpar</button>
                 </div>
             </div>
@@ -82,6 +130,7 @@
                  <div><h3 class="font-semibold text-gray-800 mb-2">Capô</h3><div class="bg-gray-50 p-3 rounded-md"><div class="flex items-center justify-between mb-2"><label for="capo-position" class="text-sm">Posição do Capô:</label><span id="capo-status" class="text-sm font-medium text-blue-600">0</span></div><input id="capo-position" type="range" min="0" max="12" value="0" class="w-full mb-2"><div id="capo-info" class="text-xs text-gray-600 text-center">Sem capô</div></div></div>
                  <div><h3 class="font-semibold text-gray-800 mb-2">Formatação da Cifra</h3><div class="space-y-3 bg-gray-50 p-3 rounded-md"><div class="flex items-center justify-between"><label for="lyrics-size" class="text-sm">Letra:</label><input id="lyrics-size" type="range" min="10" max="32" value="16" class="w-2/3"><input id="lyrics-color" type="color" value="#374151" class="w-8 h-8 p-0 border-none rounded"></div><div class="flex items-center justify-between"><label for="chords-size" class="text-sm">Acordes:</label><input id="chords-size" type="range" min="10" max="32" value="16" class="w-2/3"><input id="chords-color" type="color" value="#2563eb" class="w-8 h-8 p-0 border-none rounded"></div></div></div>
                  <div><h3 class="font-semibold text-gray-800 mb-2">Layout e Visualização</h3><div class="grid grid-cols-2 gap-2 bg-gray-50 p-3 rounded-md"><button id="view-mode-toggle" class="bg-gray-200 py-2 rounded-md text-sm">Ver Mapa</button><button id="columns-toggle" class="bg-gray-200 py-2 rounded-md text-sm">Usar 2 Colunas</button><button onclick="window.print()" class="col-span-2 bg-green-600 text-white hover:bg-green-700 py-2 rounded-md text-sm">Imprimir / Salvar PDF</button></div><div class="flex justify-center gap-2 mt-2 bg-gray-50 p-3 rounded-md"><button data-view="desktop" class="view-toggle-btn p-2 text-gray-500 hover:text-blue-600" title="Desktop"><i class="fas fa-desktop"></i></button><button data-view="tablet" class="view-toggle-btn p-2 text-gray-500 hover:text-blue-600" title="Tablet"><i class="fas fa-tablet-alt"></i></button><button data-view="mobile" class="view-toggle-btn p-2 text-gray-500 hover:text-blue-600" title="Mobile"><i class="fas fa-mobile-alt"></i></button></div></div>
+                 <div><h3 class="font-semibold text-gray-800 mb-2">Rolagem Automática</h3><div class="bg-gray-50 p-3 rounded-md"><div class="flex items-center justify-between mb-2"><button id="scroll-toggle" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md text-sm"><i class="fas fa-play mr-1"></i>Iniciar Rolagem</button><span id="scroll-status" class="text-sm text-gray-600">Parado</span></div><div class="space-y-3"><div class="flex items-center justify-between"><label for="scroll-speed" class="text-sm">Velocidade:</label><span id="speed-display" class="text-sm font-medium text-blue-600">1x</span></div><input id="scroll-speed" type="range" min="0.5" max="3" step="0.1" value="1" class="w-full mb-2"><div class="flex items-center justify-between"><label for="manual-speed" class="text-sm">Velocidade Manual:</label><input type="number" id="manual-speed" min="0.1" max="5" step="0.1" value="1" class="w-16 p-1 border rounded text-sm"></div><div class="text-xs text-gray-500">Velocidade baseada no BPM da música</div></div></div></div>
             </div>
         </aside>
         <main class="flex-1 p-4 sm:p-8 bg-gray-100">
@@ -98,7 +147,7 @@
         <i class="fas fa-expand text-lg"></i>
     </button>
 
-    <dialog id="save-modal" class="p-6 rounded-lg shadow-xl border w-full max-w-md"><h3 class="text-lg font-bold mb-4">Salvar Música</h3><form id="save-form"><div class="space-y-4"><label for="song-title-input" class="block text-sm mb-1">Título da Música:</label><input type="text" id="song-title-input" class="w-full p-2 border rounded-md" required><label for="original-key-input" class="block text-sm mb-1">Tom Original:</label><input type="text" id="original-key-input" class="w-full p-2 border rounded-md" placeholder="Ex: G, Am, C#m"><label for="save-capo-position" class="block text-sm mb-1">Posição do Capô:</label><input type="number" id="save-capo-position" min="0" max="12" value="0" class="w-full p-2 border rounded-md" placeholder="0"><div class="flex items-center mt-2"><input id="is-public-checkbox" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"><label for="is-public-checkbox" class="ml-2 block text-sm text-gray-900">Compartilhar com todos os usuários</label></div></div><div class="flex justify-end gap-4 mt-6"><button type="button" class="cancel-btn py-2 px-4 bg-gray-200 rounded-md">Cancelar</button><button type="submit" class="py-2 px-4 bg-blue-600 text-white rounded-md">Salvar</button></div></form></dialog>
+    <dialog id="save-modal" class="p-6 rounded-lg shadow-xl border w-full max-w-md"><h3 class="text-lg font-bold mb-4">Salvar Música</h3><form id="save-form"><div class="space-y-4"><label for="song-title-input" class="block text-sm mb-1">Título da Música:</label><input type="text" id="song-title-input" class="w-full p-2 border rounded-md" required><label for="original-key-input" class="block text-sm mb-1">Tom Original:</label><input type="text" id="original-key-input" class="w-full p-2 border rounded-md" placeholder="Ex: G, Am, C#m"><div class="grid grid-cols-2 gap-4"><div><label for="song-duration" class="block text-sm mb-1">Duração (min:seg):</label><input type="text" id="song-duration" class="w-full p-2 border rounded-md" placeholder="3:45" pattern="[0-9]+:[0-5][0-9]"><div class="text-xs text-gray-500 mt-1">Formato: MM:SS</div></div><div><label for="song-bpm" class="block text-sm mb-1">BPM:</label><input type="number" id="song-bpm" min="40" max="200" class="w-full p-2 border rounded-md" placeholder="120"><div class="text-xs text-gray-500 mt-1">40-200 BPM</div></div></div><label for="save-capo-position" class="block text-sm mb-1">Posição do Capô:</label><input type="number" id="save-capo-position" min="0" max="12" value="0" class="w-full p-2 border rounded-md" placeholder="0"><div class="flex items-center mt-2"><input id="is-public-checkbox" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"><label for="is-public-checkbox" class="ml-2 block text-sm text-gray-900">Compartilhar com todos os usuários</label></div></div><div class="flex justify-end gap-4 mt-6"><button type="button" class="cancel-btn py-2 px-4 bg-gray-200 rounded-md">Cancelar</button><button type="submit" class="py-2 px-4 bg-blue-600 text-white rounded-md">Salvar</button></div></form></dialog>
     <dialog id="songs-modal" class="p-6 rounded-lg shadow-xl border w-full max-w-lg"><div class="flex justify-between items-center mb-4"><h3 class="text-lg font-bold">Músicas Salvas</h3><button class="cancel-btn text-2xl font-light">&times;</button></div><div class="border-b border-gray-200 mb-2"><nav class="-mb-px flex gap-4" aria-label="Tabs"><button id="my-songs-tab" class="tab-btn active whitespace-nowrap border-b-2 py-2 px-1 text-sm font-medium">Minhas Músicas</button><button id="public-songs-tab" class="tab-btn whitespace-nowrap border-b-2 border-transparent py-2 px-1 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700">Todas as Músicas</button></nav></div><div id="modal-songs-list" class="bg-gray-50 p-2 rounded-md h-96 overflow-y-auto border"></div></dialog>
     <dialog id="user-management-modal" class="p-6 rounded-lg shadow-xl border w-full max-w-lg"><div class="flex justify-between items-center mb-4"><h3 class="text-lg font-bold">Gerenciar Usuários</h3><button id="open-create-user-modal-btn" class="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600">Criar Novo</button></div><div id="modal-users-list" class="bg-gray-50 p-2 rounded-md h-80 overflow-y-auto border"></div><div class="flex justify-end mt-4"><button type="button" class="cancel-btn py-2 px-4 bg-gray-200 rounded-md">Fechar</button></div></dialog>
     <dialog id="change-password-modal" class="p-6 rounded-lg shadow-xl border w-full max-w-md"><h3 class="text-lg font-bold mb-4">Alterar Senha</h3><form id="change-password-form"><div class="space-y-4"><div><label for="old-password" class="block text-sm mb-1">Senha Antiga:</label><div class="relative"><input type="password" id="old-password" class="w-full p-2 border rounded-md" required><button type="button" class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-400 hover:text-gray-600 toggle-password-btn"><i class="fas fa-eye"></i></button></div></div><div><label for="new-password" class="block text-sm mb-1">Nova Senha:</label><div class="relative"><input type="password" id="new-password" class="w-full p-2 border rounded-md" required><button type="button" class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-400 hover:text-gray-600 toggle-password-btn"><i class="fas fa-eye"></i></button></div></div></div><p id="change-password-feedback" class="text-sm mt-4 hidden"></p><div class="flex justify-end gap-4 mt-6"><button type="button" class="cancel-btn py-2 px-4 bg-gray-200 rounded-md">Cancelar</button><button type="submit" class="py-2 px-4 bg-blue-600 text-white rounded-md">Alterar Senha</button></div></form></dialog>
@@ -160,13 +209,23 @@
 
     <script>
     // --- STATE & DOM ---
-    const state = { songStructure: [], transposeAmount: 0, currentView: 'chart', isTwoColumns: false, capoPosition: 0 };
+    const state = { 
+        songStructure: [], 
+        transposeAmount: 0, 
+        currentView: 'chart', 
+        isTwoColumns: false, 
+        capoPosition: 0,
+        isScrolling: false,
+        scrollInterval: null,
+        currentSongData: null,
+        currentScrollStep: 2
+    };
     const dom = { 
-        songInput: document.getElementById('songInput'), generateButton: document.getElementById('generateButton'), saveButton: document.getElementById('saveButton'), clearButton: document.getElementById('clearButton'), outputArea: document.getElementById('outputArea'), summaryArea: document.getElementById('summaryArea'), uniqueChordsArea: document.getElementById('uniqueChordsArea'),
+        songInput: document.getElementById('songInput'), generateButton: document.getElementById('generateButton'), saveButton: document.getElementById('saveButton'), saveAsButton: document.getElementById('saveAsButton'), clearButton: document.getElementById('clearButton'), outputArea: document.getElementById('outputArea'), summaryArea: document.getElementById('summaryArea'), uniqueChordsArea: document.getElementById('uniqueChordsArea'),
         fullscreenBtn: document.getElementById('fullscreen-btn'), appContainer: document.getElementById('app-container'), transposeStatus: document.getElementById('transpose-status'), loginContainer: document.getElementById('login-container'), loginForm: document.getElementById('login-form'), loginError: document.getElementById('login-error'), welcomeUser: document.getElementById('welcome-user'), logoutBtn: document.getElementById('logout-btn'),
         transposeUpBtn: document.getElementById('transpose-up'), transposeDownBtn: document.getElementById('transpose-down'), capoPosition: document.getElementById('capo-position'), capoStatus: document.getElementById('capo-status'), capoInfo: document.getElementById('capo-info'), lyricsSizeSlider: document.getElementById('lyrics-size'), chordsSizeSlider: document.getElementById('chords-size'), lyricsColorPicker: document.getElementById('lyrics-color'), chordsColorPicker: document.getElementById('chords-color'),
         viewModeToggle: document.getElementById('view-mode-toggle'), columnsToggle: document.getElementById('columns-toggle'), viewWrapper: document.getElementById('view-wrapper'), 
-        saveModal: document.getElementById('save-modal'), saveForm: document.getElementById('save-form'), songTitleInput: document.getElementById('song-title-input'), originalKeyInput: document.getElementById('original-key-input'), saveCapoPosition: document.getElementById('save-capo-position'), isPublicCheckbox: document.getElementById('is-public-checkbox'),
+        saveModal: document.getElementById('save-modal'), saveForm: document.getElementById('save-form'), songTitleInput: document.getElementById('song-title-input'), originalKeyInput: document.getElementById('original-key-input'), songDuration: document.getElementById('song-duration'), songBpm: document.getElementById('song-bpm'), saveCapoPosition: document.getElementById('save-capo-position'), isPublicCheckbox: document.getElementById('is-public-checkbox'),
         openSongsBtn: document.getElementById('open-songs-btn'), songsModal: document.getElementById('songs-modal'), modalSongsList: document.getElementById('modal-songs-list'), mySongsTab: document.getElementById('my-songs-tab'), publicSongsTab: document.getElementById('public-songs-tab'), 
         manageUsersBtn: document.getElementById('manage-users-btn'), userManagementModal: document.getElementById('user-management-modal'), modalUsersList: document.getElementById('modal-users-list'), openCreateUserModalBtn: document.getElementById('open-create-user-modal-btn'), createUserModal: document.getElementById('create-user-modal'), createUserForm: document.getElementById('create-user-form'), createUserFeedback: document.getElementById('create-user-feedback'), 
         changePasswordBtn: document.getElementById('change-password-btn'), changePasswordModal: document.getElementById('change-password-modal'), changePasswordForm: document.getElementById('change-password-form'), changePasswordFeedback: document.getElementById('change-password-feedback'),
@@ -175,15 +234,23 @@
         addToSetlistForm: document.getElementById('add-to-setlist-form'), 
         setlistSelect: document.getElementById('setlist-select'),
         addSongsToSetlistModal: document.getElementById('add-songs-to-setlist-modal'),
-        availableSongsList: document.getElementById('available-songs-list')
+        availableSongsList: document.getElementById('available-songs-list'),
+        scrollToggle: document.getElementById('scroll-toggle'), scrollStatus: document.getElementById('scroll-status'), scrollSpeed: document.getElementById('scroll-speed'), speedDisplay: document.getElementById('speed-display'), manualSpeed: document.getElementById('manual-speed')
     };
 
     // --- CORE LOGIC ---
     const SHARP_SCALE = ['A', 'A#', 'B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#'];
     const FLAT_SCALE = ['A', 'Bb', 'B', 'C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab'];
     const CHORD_REGEX_SOURCE = `[A-Ga-g]([#b])?(m|min|M|Maj|maj|aug|dim|sus|add|Δ|°|ø)?([1-9][0-5]?)?(\\((#|b)?[1-9][0-3]?((,|,\\s)*(\\s|#|b)?[1-9][0-3]?)*\\))?(sus[24]?)?([/\\\\][A-Ga-g]([#b])?)?`;
-    const CHORD_REGEX_GLOBAL = new RegExp(CHORD_REGEX_SOURCE, 'g');
-    function isChordToken(token) { if (!token) return false; const regex = new RegExp(`^${CHORD_REGEX_SOURCE}$`); return regex.test(token.trim()); }
+    const CHORD_REGEX_GLOBAL = new RegExp(`(${CHORD_REGEX_SOURCE}|[A-Ga-g]([#b])?[1-9][0-5]?|[A-Ga-g]([#b])?[1-9][0-5]?[Mm])`, 'g');
+    function isChordToken(token) { 
+        if (!token) return false; 
+        const trimmed = token.trim();
+        const regex = new RegExp(`^${CHORD_REGEX_SOURCE}$`); 
+        const simpleChordRegex = /^[A-Ga-g][#b]?[1-9][0-5]?$/;
+        const majorSeventhRegex = /^[A-Ga-g][#b]?[1-9][0-5]?[Mm]$/;
+        return regex.test(trimmed) || simpleChordRegex.test(trimmed) || majorSeventhRegex.test(trimmed);
+    }
     const isPotentiallyChordLine = (line) => { const t = line.trim(); if (!t || /^\[.*\]$/.test(t)) return false; const tokens = t.split(/\s+/).filter(Boolean); return tokens.length > 0 && tokens.every(isChordToken); };
     function transposeNote(n, a) { let s = n.includes('b') ? FLAT_SCALE : SHARP_SCALE; let i = s.indexOf(n); if (i === -1) return n; return s[(i + a + 12) % 12]; }
     function transposeChord(c, a) { if (a === 0) return c; const rm = c.match(/^[A-G](#|b)?/); if (!rm) return c; const [mc, bn] = c.split('/'); const r = rm[0]; const q = mc.substring(r.length); const nr = transposeNote(r, a); const tm = nr + q; return bn ? `${tm}/${transposeNote(bn, a)}` : tm; }
@@ -231,10 +298,20 @@
             songs.forEach(song => { 
                 const li = document.createElement('li'); 
                 li.className = 'flex justify-between items-center p-2 hover:bg-blue-100 rounded'; 
+                
+                // Criar informações detalhadas
+                const infoParts = [];
+                if (song.original_key) infoParts.push(`Tom: ${song.original_key}`);
+                if (song.capo_position && song.capo_position > 0) infoParts.push(`Capô: ${song.capo_position}ª`);
+                if (song.bpm) infoParts.push(`BPM: ${song.bpm}`);
+                if (song.duration) infoParts.push(`Duração: ${song.duration}`);
+                
+                const infoText = infoParts.length > 0 ? infoParts.join(' • ') : 'Sem informações';
+                
                 li.innerHTML = `
-                    <div class="flex-1 truncate cursor-pointer">
-                        <span class="text-sm font-medium">${song.title}</span>
-                        <span class="text-xs text-gray-500 ml-2">(${song.original_key || 'N/A'})</span>
+                    <div class="flex-1 cursor-pointer">
+                        <div class="text-sm font-medium">${song.title}</div>
+                        <div class="text-xs text-gray-500">${infoText}</div>
                     </div>
                     <div class="flex gap-2">
                         <button data-song-id="${song.id}" class="add-to-setlist-btn text-blue-500 hover:text-blue-700 p-1" title="Adicionar ao Setlist"><i class="fas fa-plus-circle"></i></button>
@@ -247,9 +324,81 @@
             dom.modalSongsList.innerHTML = '<p class="text-center text-red-500 text-sm p-4">Erro ao carregar músicas.</p>'; 
         } 
     }
-    async function handleLoadSong(songId) { try { const song = await fetchApi(`/api/songs/${songId}`); dom.songInput.value = song.content; handleGenerate(); if (song.capo_position !== undefined) { state.capoPosition = song.capo_position; dom.capoPosition.value = song.capo_position; updateCapoStatus(); } } catch (error) { alert('Não foi possível carregar a música.'); } }
+    async function handleLoadSong(songId) { 
+        try { 
+            const song = await fetchApi(`/api/songs/${songId}`); 
+            dom.songInput.value = song.content; 
+            handleGenerate(); 
+            
+            if (song.capo_position !== undefined) { 
+                state.capoPosition = song.capo_position; 
+                dom.capoPosition.value = song.capo_position; 
+                updateCapoStatus(); 
+            } 
+            
+            // Carrega dados de duração e BPM se disponíveis
+            if (song.duration) {
+                dom.songDuration.value = song.duration;
+            }
+            if (song.bpm) {
+                dom.songBpm.value = song.bpm;
+            }
+            
+            // Atualiza os dados da música atual
+            state.currentSongData = { 
+                duration: song.duration, 
+                bpm: song.bpm 
+            };
+            
+        } catch (error) { 
+            alert('Não foi possível carregar a música.'); 
+        } 
+    }
     async function handleDeleteSong(songId, songTitle) { if (confirm(`Tem certeza que deseja deletar "${songTitle}"?`)) { try { await fetchApi(`/api/songs/${songId}`, { method: 'DELETE' }); loadSavedSongs(dom.mySongsTab.classList.contains('active') ? 'my_songs' : 'public'); } catch (error) { alert(error.message); } } }
-    async function handleSaveSong(event) { event.preventDefault(); const title = dom.songTitleInput.value; const content = dom.songInput.value; const original_key = dom.originalKeyInput.value; const is_public = dom.isPublicCheckbox.checked; const capo_position = parseInt(dom.saveCapoPosition.value) || 0; if (!title || !content.trim()) { alert('Título e conteúdo da cifra são obrigatórios.'); return; } try { await fetchApi('/api/songs', { method: 'POST', body: { title, content, original_key, is_public, capo_position } }); dom.saveModal.close(); dom.saveForm.reset(); } catch (error) { alert('Não foi possível salvar a música.'); } }
+    async function handleSaveSong(event) { 
+        event.preventDefault(); 
+        const title = dom.songTitleInput.value; 
+        const content = dom.songInput.value; 
+        const original_key = dom.originalKeyInput.value; 
+        const duration = dom.songDuration.value;
+        const bpm = parseInt(dom.songBpm.value) || null;
+        const is_public = dom.isPublicCheckbox.checked; 
+        const capo_position = parseInt(dom.saveCapoPosition.value) || 0; 
+        
+        if (!title || !content.trim()) { 
+            alert('Título e conteúdo da cifra são obrigatórios.'); 
+            return; 
+        } 
+        
+        // Validação da duração
+        if (duration && !/^\d+:[0-5]\d$/.test(duration)) {
+            alert('Formato de duração inválido. Use MM:SS (ex: 3:45)');
+            return;
+        }
+        
+        try { 
+            await fetchApi('/api/songs', { 
+                method: 'POST', 
+                body: { 
+                    title, 
+                    content, 
+                    original_key, 
+                    duration,
+                    bpm,
+                    is_public, 
+                    capo_position 
+                } 
+            }); 
+            
+            // Atualiza os dados da música atual
+            state.currentSongData = { duration, bpm };
+            
+            dom.saveModal.close(); 
+            dom.saveForm.reset(); 
+        } catch (error) { 
+            alert('Não foi possível salvar a música.'); 
+        } 
+    }
     
     // --- USER MANAGEMENT FUNCTIONS ---
     async function handleCreateUser(event) { 
@@ -575,7 +724,161 @@
 
     // --- RENDERING LOGIC ---
     function applyStyles() { const e = document.getElementById('dynamic-styles'); if (e) e.remove(); const s = document.createElement("style"); s.id = 'dynamic-styles'; s.innerText = `.lyric-output{font-size:${dom.lyricsSizeSlider.value}px;color:${dom.lyricsColorPicker.value};}.chord-output,.summary-chord{font-size:${dom.chordsSizeSlider.value}px;color:${dom.chordsColorPicker.value};}`; document.head.appendChild(s); }
-    function render() { applyStyles(); if (state.songStructure.length === 0) { dom.outputArea.innerHTML = '<p class="text-gray-500 italic">Gere uma cifra ou carregue uma música salva.</p>'; dom.summaryArea.innerHTML = ''; dom.uniqueChordsArea.innerHTML = ''; return; } dom.outputArea.innerHTML = ''; state.songStructure.forEach(s => { const d = document.createElement('div'); d.className = 'mb-6 section-container'; const h = document.createElement('h3'); h.className = 'text-lg font-bold text-gray-800 mb-2'; h.textContent = s.name; d.appendChild(h); s.items.forEach(i => { if (i.type === 'pair' || i.type === 'chords') { const cd = document.createElement('div'); cd.className = 'chord-output mb-1'; cd.textContent = i.chords.replace(CHORD_REGEX_GLOBAL, match => transposeChord(match, getTotalTranspose())); d.appendChild(cd); } if (i.type === 'pair') { const ld = document.createElement('div'); ld.className = 'lyric-output'; ld.textContent = i.lyrics; d.appendChild(ld); } if (i.type === 'lyrics') { const ld = document.createElement('div'); ld.className = 'lyric-output'; ld.textContent = i.lyrics; d.appendChild(ld); } if (i.type === 'spacer') { const sd = document.createElement('div'); sd.className = 'h-4'; d.appendChild(sd); } }); if (state.currentView === 'map') { const b = document.createElement('div'); b.className = 'mt-3 p-2 bg-gray-50 rounded-md text-sm flex flex-wrap items-baseline gap-x-2'; const titleSpan = document.createElement('span'); titleSpan.className = 'font-semibold text-gray-600'; titleSpan.textContent = 'Sequência:'; const chordSpan = document.createElement('span'); chordSpan.className = 'summary-chord break-words'; chordSpan.textContent = formatChordSequenceWithPatterns(s.chordSequence, getTotalTranspose()); b.appendChild(titleSpan); b.appendChild(chordSpan); d.appendChild(b); } dom.outputArea.appendChild(d); }); const allChords = [...new Set(state.songStructure.flatMap(s => s.chordSequence))].map(c => transposeChord(c, getTotalTranspose())); dom.uniqueChordsArea.innerHTML = `<h2 class="text-xl font-bold text-gray-800 mb-2 mt-4 border-t pt-4">Notas da Música</h2><div class="flex flex-wrap gap-2">${allChords.map(c => `<span class="bg-gray-200 text-gray-800 px-3 py-1 rounded-md text-sm font-medium">${c}</span>`).join('')}</div>`; dom.summaryArea.innerHTML = `<h2 class="text-xl font-bold text-gray-800 mb-2 mt-4 border-t pt-4">Estrutura Completa</h2><div class="p-4 bg-blue-50 rounded-lg text-sm leading-relaxed">${state.songStructure.filter(s => s.chordSequence.length > 0).map(s => `<strong class="text-blue-800">[${s.name}]</strong> <span class="summary-chord">(${formatChordSequenceWithPatterns(s.chordSequence, getTotalTranspose())})</span>`).join(' <span class="font-bold text-blue-400">&rarr;</span> ')}</div>`; }
+    function render() { 
+        applyStyles(); 
+        if (state.songStructure.length === 0) { 
+            dom.outputArea.innerHTML = '<p class="text-gray-500 italic">Gere uma cifra ou carregue uma música salva.</p>'; 
+            dom.summaryArea.innerHTML = ''; 
+            dom.uniqueChordsArea.innerHTML = ''; 
+            return; 
+        } 
+        
+        dom.outputArea.innerHTML = ''; 
+        
+        // Se estiver em modo de 2 colunas, distribuir o conteúdo
+        if (state.isTwoColumns) {
+            const sections = [];
+            
+            state.songStructure.forEach(s => { 
+                const d = document.createElement('div'); 
+                d.className = 'mb-6 section-container'; 
+                const h = document.createElement('h3'); 
+                h.className = 'text-lg font-bold text-gray-800 mb-2'; 
+                h.textContent = s.name; 
+                d.appendChild(h); 
+                
+                s.items.forEach(i => { 
+                    if (i.type === 'pair' || i.type === 'chords') { 
+                        const cd = document.createElement('div'); 
+                        cd.className = 'chord-output mb-1'; 
+                        cd.textContent = i.chords.replace(CHORD_REGEX_GLOBAL, match => transposeChord(match, getTotalTranspose())); 
+                        d.appendChild(cd); 
+                    } 
+                    if (i.type === 'pair') { 
+                        const ld = document.createElement('div'); 
+                        ld.className = 'lyric-output'; 
+                        ld.textContent = i.lyrics; 
+                        d.appendChild(ld); 
+                    } 
+                    if (i.type === 'lyrics') { 
+                        const ld = document.createElement('div'); 
+                        ld.className = 'lyric-output'; 
+                        ld.textContent = i.lyrics; 
+                        d.appendChild(ld); 
+                    } 
+                    if (i.type === 'spacer') { 
+                        const sd = document.createElement('div'); 
+                        sd.className = 'h-4'; 
+                        d.appendChild(sd); 
+                    } 
+                }); 
+                
+                if (state.currentView === 'map') { 
+                    const b = document.createElement('div'); 
+                    b.className = 'mt-3 p-2 bg-gray-50 rounded-md text-sm flex flex-wrap items-baseline gap-x-2'; 
+                    const titleSpan = document.createElement('span'); 
+                    titleSpan.className = 'font-semibold text-gray-600'; 
+                    titleSpan.textContent = 'Sequência:'; 
+                    const chordSpan = document.createElement('span'); 
+                    chordSpan.className = 'summary-chord break-words'; 
+                    chordSpan.textContent = formatChordSequenceWithPatterns(s.chordSequence, getTotalTranspose()); 
+                    b.appendChild(titleSpan); 
+                    b.appendChild(chordSpan); 
+                    d.appendChild(b); 
+                } 
+                
+                sections.push(d);
+            });
+            
+            // Distribuir seções entre as colunas de forma mais inteligente
+            const leftColumn = [];
+            const rightColumn = [];
+            let leftHeight = 0;
+            let rightHeight = 0;
+            
+            sections.forEach(section => {
+                // Estimativa simples de altura baseada no número de elementos
+                const estimatedHeight = section.children.length;
+                
+                if (leftHeight <= rightHeight) {
+                    leftColumn.push(section);
+                    leftHeight += estimatedHeight;
+                } else {
+                    rightColumn.push(section);
+                    rightHeight += estimatedHeight;
+                }
+            });
+            
+            // Criar containers para as colunas
+            const leftContainer = document.createElement('div');
+            leftContainer.className = 'column-container';
+            leftColumn.forEach(section => leftContainer.appendChild(section));
+            
+            const rightContainer = document.createElement('div');
+            rightContainer.className = 'column-container';
+            rightColumn.forEach(section => rightContainer.appendChild(section));
+            
+            dom.outputArea.appendChild(leftContainer);
+            dom.outputArea.appendChild(rightContainer);
+            
+        } else {
+            // Modo de 1 coluna (comportamento original)
+            state.songStructure.forEach(s => { 
+                const d = document.createElement('div'); 
+                d.className = 'mb-6 section-container'; 
+                const h = document.createElement('h3'); 
+                h.className = 'text-lg font-bold text-gray-800 mb-2'; 
+                h.textContent = s.name; 
+                d.appendChild(h); 
+                
+                s.items.forEach(i => { 
+                    if (i.type === 'pair' || i.type === 'chords') { 
+                        const cd = document.createElement('div'); 
+                        cd.className = 'chord-output mb-1'; 
+                        cd.textContent = i.chords.replace(CHORD_REGEX_GLOBAL, match => transposeChord(match, getTotalTranspose())); 
+                        d.appendChild(cd); 
+                    } 
+                    if (i.type === 'pair') { 
+                        const ld = document.createElement('div'); 
+                        ld.className = 'lyric-output'; 
+                        ld.textContent = i.lyrics; 
+                        d.appendChild(ld); 
+                    } 
+                    if (i.type === 'lyrics') { 
+                        const ld = document.createElement('div'); 
+                        ld.className = 'lyric-output'; 
+                        ld.textContent = i.lyrics; 
+                        d.appendChild(ld); 
+                    } 
+                    if (i.type === 'spacer') { 
+                        const sd = document.createElement('div'); 
+                        sd.className = 'h-4'; 
+                        d.appendChild(sd); 
+                    } 
+                }); 
+                
+                if (state.currentView === 'map') { 
+                    const b = document.createElement('div'); 
+                    b.className = 'mt-3 p-2 bg-gray-50 rounded-md text-sm flex flex-wrap items-baseline gap-x-2'; 
+                    const titleSpan = document.createElement('span'); 
+                    titleSpan.className = 'font-semibold text-gray-600'; 
+                    titleSpan.textContent = 'Sequência:'; 
+                    const chordSpan = document.createElement('span'); 
+                    chordSpan.className = 'summary-chord break-words'; 
+                    chordSpan.textContent = formatChordSequenceWithPatterns(s.chordSequence, getTotalTranspose()); 
+                    b.appendChild(titleSpan); 
+                    b.appendChild(chordSpan); 
+                    d.appendChild(b); 
+                } 
+                
+                dom.outputArea.appendChild(d); 
+            });
+        }
+        
+        const allChords = [...new Set(state.songStructure.flatMap(s => s.chordSequence))].map(c => transposeChord(c, getTotalTranspose())); 
+        dom.uniqueChordsArea.innerHTML = `<h2 class="text-xl font-bold text-gray-800 mb-2 mt-4 border-t pt-4">Notas da Música</h2><div class="flex flex-wrap gap-2">${allChords.map(c => `<span class="bg-gray-200 text-gray-800 px-3 py-1 rounded-md text-sm font-medium">${c}</span>`).join('')}</div>`; 
+        dom.summaryArea.innerHTML = `<h2 class="text-xl font-bold text-gray-800 mb-2 mt-4 border-t pt-4">Estrutura Completa</h2><div class="p-4 bg-blue-50 rounded-lg text-sm leading-relaxed">${state.songStructure.filter(s => s.chordSequence.length > 0).map(s => `<strong class="text-blue-800">[${s.name}]</strong> <span class="summary-chord">(${formatChordSequenceWithPatterns(s.chordSequence, getTotalTranspose())})</span>`).join(' <span class="font-bold text-blue-400">&rarr;</span> ')}</div>`; 
+    }
 
     // --- UI EVENT HANDLERS ---
     function handleModalListClick(event) {
@@ -630,7 +933,15 @@
             return;
         }
     }
-    function handleGenerate() { state.songStructure = parseSong(dom.songInput.value); state.transposeAmount = 0; state.capoPosition = 0; updateTransposeStatus(); updateCapoStatus(); render(); }
+    function handleGenerate() { 
+        state.songStructure = parseSong(dom.songInput.value); 
+        state.transposeAmount = 0; 
+        state.capoPosition = 0; 
+        updateTransposeStatus(); 
+        updateCapoStatus(); 
+        resetScroll();
+        render(); 
+    }
     function handleClearInput() { dom.songInput.value = ''; handleGenerate(); }
     function handleTranspose(a) { state.transposeAmount += a; updateTransposeStatus(); render(); }
     function updateTransposeStatus() { dom.transposeStatus.textContent = state.transposeAmount === 0 ? 'Original' : `${state.transposeAmount > 0 ? '+' : ''}${state.transposeAmount}`; }
@@ -658,7 +969,14 @@
         }
     }
     function handleViewModeToggle() { state.currentView = state.currentView === 'chart' ? 'map' : 'chart'; dom.viewModeToggle.textContent = state.currentView === 'chart' ? 'Ver Mapa' : 'Ver Cifra'; render(); }
-    function handleColumnsToggle() { state.isTwoColumns = !state.isTwoColumns; dom.outputArea.classList.toggle('two-columns', state.isTwoColumns); dom.columnsToggle.textContent = state.isTwoColumns ? 'Usar 1 Coluna' : 'Usar 2 Colunas'; }
+    function handleColumnsToggle() { 
+        state.isTwoColumns = !state.isTwoColumns; 
+        dom.outputArea.classList.toggle('two-columns', state.isTwoColumns); 
+        dom.columnsToggle.textContent = state.isTwoColumns ? 'Usar 1 Coluna' : 'Usar 2 Colunas'; 
+        
+        console.log('Colunas alteradas:', state.isTwoColumns ? '2 colunas' : '1 coluna');
+        console.log('Classes do outputArea:', dom.outputArea.className);
+    }
     function handleDeviceViewToggle(d) { dom.viewWrapper.classList.remove('view-desktop', 'view-tablet', 'view-mobile'); if (d !== 'desktop') { dom.viewWrapper.classList.add(`view-${d}`); } }
     function toggleFullscreen() { 
         if (!document.fullscreenElement) { 
@@ -682,6 +1000,164 @@
         }
     }
 
+    // --- SCROLL FUNCTIONS ---
+    function toggleScroll() {
+        if (state.isScrolling) {
+            stopScroll();
+        } else {
+            startScroll();
+        }
+    }
+
+    function startScroll() {
+        const speedMultiplier = parseFloat(dom.scrollSpeed.value) || 1;
+        const manualSpeed = parseFloat(dom.manualSpeed.value) || 1;
+        
+        // Garantir que os valores não sejam zero
+        if (speedMultiplier <= 0 || manualSpeed <= 0) {
+            alert('A velocidade deve ser maior que zero.');
+            return;
+        }
+        
+        // Verificar se há conteúdo para rolar
+        const viewWrapper = dom.viewWrapper;
+        const outputArea = dom.outputArea;
+        
+        console.log('ViewWrapper height:', viewWrapper.scrollHeight, 'clientHeight:', viewWrapper.clientHeight);
+        console.log('OutputArea height:', outputArea.scrollHeight, 'clientHeight:', outputArea.clientHeight);
+        console.log('OutputArea content:', outputArea.innerHTML.substring(0, 100) + '...');
+        
+        // Verificar se o outputArea tem conteúdo suficiente para rolar
+        if (outputArea.scrollHeight <= outputArea.clientHeight) {
+            alert('Não há conteúdo suficiente para rolar. Gere uma cifra primeiro.');
+            return;
+        }
+        
+        let scrollInterval;
+        let scrollStep;
+        
+        if (state.currentSongData && state.currentSongData.bpm) {
+            // Se tem BPM configurado, calcula baseado no BPM
+            const bpm = state.currentSongData.bpm;
+            const beatsPerSecond = bpm / 60;
+            const secondsPerBeat = 1 / beatsPerSecond;
+            scrollInterval = 100; // Intervalo de 100ms para rolagem mais controlada
+            // Corrigindo a lógica: multiplicar pela velocidade manual (não dividir)
+            const baseStep = (secondsPerBeat * 4 * 1000 * manualSpeed) / (speedMultiplier * 1000);
+            scrollStep = Math.max(0.1, Math.min(baseStep, 2.0)); // Limita entre 0.1 e 2.0
+        } else {
+            // Se não tem BPM, usa velocidade manual
+            scrollInterval = 100; // Intervalo de 100ms para rolagem mais controlada
+            scrollStep = Math.max(0.1, 0.5 * manualSpeed); // Passo mínimo 0.1, baseado na velocidade manual
+        }
+
+        // Garantir que o passo seja pelo menos 0.1 pixel
+        scrollStep = Math.max(scrollStep, 0.1);
+        state.currentScrollStep = scrollStep;
+        
+        console.log('Iniciando rolagem com intervalo:', scrollInterval, 'ms, passo:', scrollStep, 'px');
+        console.log('Speed multiplier:', speedMultiplier, 'Manual speed:', manualSpeed);
+
+        state.isScrolling = true;
+        state.scrollInterval = setInterval(() => {
+            const currentScrollTop = outputArea.scrollTop;
+            const maxScrollTop = outputArea.scrollHeight - outputArea.clientHeight;
+            
+            console.log('Rolando... Current:', currentScrollTop, 'Max:', maxScrollTop, 'Step:', state.currentScrollStep);
+            
+            outputArea.scrollTop += state.currentScrollStep;
+            
+            // Para quando chegar ao final
+            if (outputArea.scrollTop >= maxScrollTop) {
+                console.log('Chegou ao final, parando rolagem');
+                stopScroll();
+            }
+        }, scrollInterval);
+
+        dom.scrollToggle.innerHTML = '<i class="fas fa-pause mr-1"></i>Parar Rolagem';
+        dom.scrollToggle.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+        dom.scrollToggle.classList.add('bg-red-600', 'hover:bg-red-700');
+        dom.scrollStatus.textContent = 'Rolando';
+    }
+
+    function stopScroll() {
+        if (state.scrollInterval) {
+            clearInterval(state.scrollInterval);
+            state.scrollInterval = null;
+        }
+        state.isScrolling = false;
+        
+        dom.scrollToggle.innerHTML = '<i class="fas fa-play mr-1"></i>Iniciar Rolagem';
+        dom.scrollToggle.classList.remove('bg-red-600', 'hover:bg-red-700');
+        dom.scrollToggle.classList.add('bg-blue-600', 'hover:bg-blue-700');
+        dom.scrollStatus.textContent = 'Parado';
+    }
+
+    function updateSpeedDisplay() {
+        const speed = parseFloat(dom.scrollSpeed.value);
+        dom.speedDisplay.textContent = speed + 'x';
+        
+        // Se estiver rolando, atualiza a velocidade em tempo real
+        if (state.isScrolling && state.scrollInterval) {
+            updateScrollSpeed();
+        }
+    }
+    
+    function updateScrollSpeed() {
+        if (!state.isScrolling || !state.scrollInterval) return;
+        
+        const speedMultiplier = parseFloat(dom.scrollSpeed.value) || 1;
+        const manualSpeed = parseFloat(dom.manualSpeed.value) || 1;
+        
+        let newScrollStep;
+        
+        if (state.currentSongData && state.currentSongData.bpm) {
+            const bpm = state.currentSongData.bpm;
+            const beatsPerSecond = bpm / 60;
+            const secondsPerBeat = 1 / beatsPerSecond;
+            // Corrigindo a lógica: multiplicar pela velocidade manual (não dividir)
+            const baseStep = (secondsPerBeat * 4 * 1000 * manualSpeed) / (speedMultiplier * 1000);
+            newScrollStep = Math.max(0.1, Math.min(baseStep, 2.0));
+        } else {
+            newScrollStep = Math.max(0.1, 0.5 * manualSpeed);
+        }
+        
+        // Atualiza o passo de rolagem
+        state.currentScrollStep = Math.max(newScrollStep, 0.1);
+        
+        console.log('Velocidade atualizada - novo passo:', state.currentScrollStep, 'px');
+    }
+
+    function handleSaveAs() {
+        if (!dom.songInput.value.trim()) {
+            alert("Por favor, cole uma cifra antes de salvar.");
+            return;
+        }
+        
+        // Preenche os campos com os dados atuais
+        dom.saveCapoPosition.value = state.capoPosition;
+        dom.songTitleInput.value = dom.songTitleInput.value + ' (Cópia)';
+        
+        // Se há dados da música atual, preenche duração e BPM
+        if (state.currentSongData) {
+            if (state.currentSongData.duration) {
+                dom.songDuration.value = state.currentSongData.duration;
+            }
+            if (state.currentSongData.bpm) {
+                dom.songBpm.value = state.currentSongData.bpm;
+            }
+        }
+        
+        dom.saveModal.showModal();
+    }
+
+    function resetScroll() {
+        if (state.isScrolling) {
+            stopScroll();
+        }
+        dom.outputArea.scrollTop = 0;
+    }
+
     // --- INITIALIZATION ---
     document.addEventListener('DOMContentLoaded', () => {
         // Auth
@@ -700,6 +1176,18 @@
         document.querySelectorAll('.view-toggle-btn').forEach(b => b.addEventListener('click', e => handleDeviceViewToggle(e.currentTarget.dataset.view)));
         dom.fullscreenBtn.addEventListener('click', toggleFullscreen);
         
+        // Scroll functionality
+        dom.scrollToggle.addEventListener('click', toggleScroll);
+        dom.scrollSpeed.addEventListener('input', updateSpeedDisplay);
+        dom.manualSpeed.addEventListener('input', () => {
+            dom.scrollSpeed.value = dom.manualSpeed.value;
+            updateSpeedDisplay();
+        });
+        dom.scrollSpeed.addEventListener('input', () => {
+            dom.manualSpeed.value = dom.scrollSpeed.value;
+            updateSpeedDisplay();
+        });
+        
         // Event listeners para detectar mudanças no estado de tela cheia
         document.addEventListener('fullscreenchange', updateFullscreenIcon);
         document.addEventListener('webkitfullscreenchange', updateFullscreenIcon);
@@ -709,6 +1197,7 @@
         // Songs
         document.querySelectorAll('.cancel-btn').forEach(b => b.addEventListener('click', (e) => e.target.closest('dialog').close()));
         dom.saveButton.addEventListener('click', () => { if (dom.songInput.value.trim()) { dom.saveCapoPosition.value = state.capoPosition; dom.saveModal.showModal(); } else { alert("Por favor, cole uma cifra antes de salvar."); } });
+        dom.saveAsButton.addEventListener('click', handleSaveAs);
         dom.saveForm.addEventListener('submit', handleSaveSong);
         dom.openSongsBtn.addEventListener('click', () => { dom.mySongsTab.classList.add('active'); dom.publicSongsTab.classList.remove('active'); loadSavedSongs('my_songs'); dom.songsModal.showModal(); });
         dom.mySongsTab.addEventListener('click', () => { dom.mySongsTab.classList.add('active'); dom.publicSongsTab.classList.remove('active'); loadSavedSongs('my_songs'); });
@@ -755,6 +1244,9 @@
 
         // Cifra padrão
         if (dom.songInput.value.trim() === "") { dom.songInput.value = `[Intro]\nG D Em C\n\n[Verso 1]\n   G              D\nVim para adorar-te\n   Em             C\nVim para prostrar-me\nG              D           C\nVim para dizer que és meu Deus`; }
+        
+        // Inicializar velocidade de rolagem
+        updateSpeedDisplay();
         
         checkAuthStatus();
     });
