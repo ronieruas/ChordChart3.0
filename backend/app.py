@@ -374,10 +374,40 @@ def delete_song(song_id):
 @login_required
 def get_song(song_id):
     db = get_db()
-    song = db.execute('SELECT content, capo_position, duration, bpm FROM songs WHERE id = ?', (song_id,)).fetchone()
+    song = db.execute('SELECT title, content, capo_position, duration, bpm, original_key FROM songs WHERE id = ?', (song_id,)).fetchone()
     db.close()
     if song is None: return jsonify({'error': 'Song not found'}), 404
     return jsonify(dict(song))
+
+@app.route('/api/songs/<int:song_id>', methods=['PUT'])
+@login_required
+def update_song(song_id):
+    data = request.get_json()
+    conn = get_db()
+    
+    # Verifica se a música existe e pertence ao usuário
+    song = conn.execute("SELECT user_id FROM songs WHERE id = ?", (song_id,)).fetchone()
+    if song is None:
+        conn.close()
+        return jsonify({"error": "Música não encontrada"}), 404
+    if song['user_id'] != current_user.id:
+        conn.close()
+        return jsonify({"error": "Acesso não autorizado para modificar esta música"}), 403
+    
+    # Atualiza a música
+    conn.execute('''
+        UPDATE songs 
+        SET title = ?, content = ?, original_key = ?, duration = ?, bpm = ?, 
+            is_public = ?, capo_position = ?
+        WHERE id = ?
+    ''', (
+        data.get('title'), data.get('content'), data.get('original_key'),
+        data.get('duration'), data.get('bpm'), data.get('is_public', False),
+        data.get('capo_position', 0), song_id
+    ))
+    conn.commit()
+    conn.close()
+    return jsonify({"message": "Música atualizada com sucesso!"})
 
 # --- SETLISTS API ROUTES ---
 @app.route('/api/setlists', methods=['POST'])
@@ -436,7 +466,7 @@ def get_setlist_details(setlist_id):
 
     songs_in_setlist = db.execute(
         '''
-        SELECT s.id, s.title, s.original_key
+        SELECT s.id, s.title, s.original_key, s.capo_position, s.duration, s.bpm
         FROM songs s
         JOIN setlist_songs ss ON s.id = ss.song_id
         WHERE ss.setlist_id = ?
@@ -652,7 +682,7 @@ def get_available_songs_for_setlist(setlist_id):
     try:
         # Busca músicas do usuário que não estão no setlist
         available_songs = conn.execute('''
-            SELECT s.id, s.title, s.original_key
+            SELECT s.id, s.title, s.original_key, s.capo_position, s.duration, s.bpm
             FROM songs s
             WHERE s.user_id = ?
             AND s.id NOT IN (
