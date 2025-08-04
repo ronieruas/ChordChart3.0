@@ -64,6 +64,96 @@
             animation: fadeInScale 0.3s ease-out;
         }
 
+        /* Animações para a página de login */
+        @keyframes fadeInUp {
+            0% { opacity: 0; transform: translateY(30px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        #login-container .bg-white\/80 {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        #login-container .bg-gradient-to-br {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        #login-container .bg-gradient-to-br:nth-child(2) {
+            animation-delay: -3s;
+        }
+
+        /* Efeito de hover nos inputs */
+        #login-container input:focus {
+            transform: scale(1.02);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        /* Efeito de placeholder */
+        #login-container input::placeholder {
+            color: #9CA3AF;
+            transition: color 0.2s ease;
+        }
+
+        #login-container input:focus::placeholder {
+            color: #6B7280;
+        }
+
+        /* Efeito para o botão de toggle de senha */
+        .toggle-password-btn {
+            transition: all 0.2s ease;
+        }
+
+        .toggle-password-btn:hover {
+            background-color: rgba(59, 130, 246, 0.1);
+            border-radius: 0.5rem;
+        }
+
+        .toggle-password-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Efeito de loading no botão */
+        .btn-loading {
+            position: relative;
+            pointer-events: none;
+        }
+
+        .btn-loading::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            top: 50%;
+            left: 50%;
+            margin-left: -10px;
+            margin-top: -10px;
+            border: 2px solid transparent;
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+
         /* NOVA E SIMPLIFICADA ABORDAGEM PARA TELA CHEIA */
         #view-wrapper:fullscreen {
             overflow-y: auto !important;
@@ -102,10 +192,103 @@
 </head>
 <body class="bg-gray-100">
 
-    <div id="login-container" class="flex items-center justify-center min-h-screen bg-gray-100">
-        <div class="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
-            <h2 class="text-2xl font-bold text-center text-gray-800">Login - ChordChart Pro</h2>
-            <form id="login-form"><div class="space-y-4"><div><label for="username" class="text-sm font-medium text-gray-700">Usuário</label><input id="username" name="username" type="text" required class="w-full p-2 mt-1 border border-gray-300 rounded-md shadow-sm"></div><div><label for="password" class="text-sm font-medium text-gray-700">Senha</label><div class="relative"><input id="password" name="password" type="password" required class="w-full p-2 mt-1 border border-gray-300 rounded-md shadow-sm"><button type="button" class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-400 hover:text-gray-600 toggle-password-btn"><i class="fas fa-eye"></i></button></div></div></div><p id="login-error" class="text-sm text-red-600 mt-2 hidden">Usuário ou senha inválidos.</p><button type="submit" class="w-full px-4 py-2 mt-6 font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700">Entrar</button></form>
+    <div id="login-container" class="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+        <div class="w-full max-w-md">
+            <!-- Card principal -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-2xl border border-white/20 p-8">
+                <!-- Header com logo -->
+                <div class="text-center mb-8">
+                    <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full mb-4 shadow-lg">
+                        <i class="fas fa-music text-white text-2xl"></i>
+                    </div>
+                    <h1 class="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                        ChordChart Pro
+                    </h1>
+                    <p class="text-gray-600 mt-2 text-sm">Sua ferramenta de cifras avançada</p>
+                </div>
+
+                <!-- Formulário de login -->
+                <form id="login-form" class="space-y-6">
+                    <div class="space-y-4">
+                        <!-- Campo usuário -->
+                        <div class="relative">
+                            <label for="username" class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-user mr-2 text-blue-500"></i>Usuário
+                            </label>
+                            <div class="relative">
+                                <input 
+                                    id="username" 
+                                    name="username" 
+                                    type="text" 
+                                    required 
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/50 backdrop-blur-sm"
+                                    placeholder="Digite seu usuário"
+                                >
+                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-user text-gray-400"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Campo senha -->
+                        <div class="relative">
+                            <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-lock mr-2 text-blue-500"></i>Senha
+                            </label>
+                            <div class="relative">
+                                <input 
+                                    id="password" 
+                                    name="password" 
+                                    type="password" 
+                                    required 
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/50 backdrop-blur-sm"
+                                    placeholder="Digite sua senha"
+                                    autocomplete="current-password"
+                                >
+                                <button 
+                                    type="button" 
+                                    class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-400 hover:text-gray-600 toggle-password-btn transition-colors duration-200"
+                                    title="Mostrar senha"
+                                    onclick="window.togglePasswordVisibility(this)"
+                                >
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mensagem de erro -->
+                    <div id="login-error" class="hidden">
+                        <div class="flex items-center p-3 bg-red-50 border border-red-200 rounded-xl">
+                            <i class="fas fa-exclamation-circle text-red-500 mr-3"></i>
+                            <p class="text-sm text-red-600">Usuário ou senha inválidos.</p>
+                        </div>
+                    </div>
+
+                    <!-- Botão de login -->
+                    <button 
+                        type="submit" 
+                        class="w-full px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 focus:ring-4 focus:ring-blue-300"
+                    >
+                        <i class="fas fa-sign-in-alt mr-2"></i>
+                        Entrar
+                    </button>
+                </form>
+
+                <!-- Footer -->
+                <div class="mt-8 text-center">
+                    <p class="text-xs text-gray-500">
+                        <i class="fas fa-shield-alt mr-1"></i>
+                        Conexão segura via HTTPS
+                    </p>
+                </div>
+            </div>
+
+            <!-- Decoração de fundo -->
+            <div class="absolute inset-0 -z-10 overflow-hidden">
+                <div class="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-full blur-3xl"></div>
+                <div class="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-purple-400/20 to-pink-400/20 rounded-full blur-3xl"></div>
+            </div>
         </div>
     </div>
 
@@ -284,7 +467,47 @@
         }
     }
     async function checkAuthStatus() { try { const data = await fetchApi('/api/check_auth'); if (data && data.is_logged_in) { showApp(data.user); } else { showLoginScreen(); } } catch (e) { showLoginScreen(); } }
-    async function handleLogin(event) { event.preventDefault(); dom.loginError.classList.add('hidden'); const username = event.target.username.value; const password = event.target.password.value; try { const data = await fetchApi('/api/login', { method: 'POST', body: { username, password } }); if (data && data.user) { showApp(data.user); } } catch (e) { dom.loginError.textContent = e.message; dom.loginError.classList.remove('hidden'); } }
+    async function handleLogin(event) { 
+        event.preventDefault(); 
+        
+        // Adicionar estado de loading
+        const submitBtn = event.target.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.classList.add('btn-loading');
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Entrando...';
+        
+        dom.loginError.classList.add('hidden'); 
+        const username = event.target.username.value; 
+        const password = event.target.password.value; 
+        
+        try { 
+            const data = await fetchApi('/api/login', { method: 'POST', body: { username, password } }); 
+            if (data && data.user) { 
+                // Adicionar efeito de sucesso
+                submitBtn.innerHTML = '<i class="fas fa-check mr-2"></i>Sucesso!';
+                submitBtn.classList.remove('btn-loading');
+                submitBtn.classList.add('bg-green-600');
+                
+                setTimeout(() => {
+                    showApp(data.user); 
+                }, 500);
+            } 
+        } catch (e) { 
+            // Restaurar botão
+            submitBtn.classList.remove('btn-loading');
+            submitBtn.innerHTML = originalText;
+            
+            dom.loginError.querySelector('p').textContent = e.message; 
+            dom.loginError.classList.remove('hidden'); 
+            
+            // Adicionar shake animation
+            const loginCard = document.querySelector('#login-container .bg-white\\/80');
+            loginCard.style.animation = 'shake 0.5s ease-in-out';
+            setTimeout(() => {
+                loginCard.style.animation = '';
+            }, 500);
+        } 
+    }
     async function handleLogout() { try { await fetchApi('/api/logout', { method: 'POST' }); } finally { showLoginScreen(); } }
 
     // --- SONGS FUNCTIONS ---
@@ -328,13 +551,11 @@
     async function handleLoadSong(songId) { 
         try { 
             const song = await fetchApi(`/api/songs/${songId}`); 
-            console.log('handleLoadSong - Dados recebidos da API:', song);
             dom.songInput.value = song.content; 
             handleGenerate();
             
             // Define o ID da música atual
             state.currentSongId = songId;
-            console.log('handleLoadSong - currentSongId definido como:', state.currentSongId);
             
             if (song.capo_position !== undefined) { 
                 state.capoPosition = song.capo_position; 
@@ -358,14 +579,6 @@
                 original_key: song.original_key
             };
             
-            console.log('handleLoadSong - Dados carregados:', {
-                songId: songId,
-                duration: song.duration,
-                bpm: song.bpm,
-                original_key: song.original_key,
-                state_currentSongData: state.currentSongData
-            });
-            
         } catch (error) { 
             alert('Não foi possível carregar a música.'); 
         } 
@@ -373,7 +586,6 @@
     async function handleDeleteSong(songId, songTitle) { if (confirm(`Tem certeza que deseja deletar "${songTitle}"?`)) { try { await fetchApi(`/api/songs/${songId}`, { method: 'DELETE' }); loadSavedSongs(dom.mySongsTab.classList.contains('active') ? 'my_songs' : 'public'); } catch (error) { alert(error.message); } } }
     async function handleSaveSong(event) { 
         event.preventDefault(); 
-        console.log('=== handleSaveSong CHAMADA ===');
         const title = dom.songTitleInput.value; 
         const originalContent = dom.songInput.value; 
         // Aplica as transposições ao conteúdo antes de salvar
@@ -384,25 +596,10 @@
         const is_public = dom.isPublicCheckbox.checked; 
         const capo_position = parseInt(dom.saveCapoPosition.value) || 0;
         
-        console.log('Dados do formulário:', {
-            title,
-            content: content.substring(0, 50) + '...',
-            original_key,
-            duration,
-            bpm,
-            is_public,
-            capo_position,
-            currentSongId: state.currentSongId
-        }); 
-        
         if (!title || !content.trim()) { 
             alert('Título e conteúdo da cifra são obrigatórios.'); 
             return; 
         }
-        
-        console.log('Enviando dados para API...');
-        console.log('Método:', state.currentSongId ? 'PUT' : 'POST');
-        console.log('URL:', state.currentSongId ? `/api/songs/${state.currentSongId}` : '/api/songs'); 
         
         // Validação da duração
         if (duration && !/^\d+:[0-5]\d$/.test(duration)) {
@@ -786,7 +983,6 @@
 
     // --- UI/DISPLAY LOGIC ---
     function showApp(user) { 
-        console.log("showApp foi chamada com sucesso para o usuário:", user.username);
         dom.loginContainer.classList.add('hidden'); 
         dom.appContainer.classList.remove('hidden'); 
         dom.appContainer.classList.add('flex'); 
@@ -796,7 +992,6 @@
         handleGenerate();
     }
     function showLoginScreen() { 
-        console.log("showLoginScreen foi chamada.");
         dom.loginContainer.classList.remove('hidden'); 
         dom.appContainer.classList.add('hidden'); 
         dom.appContainer.classList.remove('flex'); 
@@ -1040,13 +1235,10 @@
     // Função para detectar o tom atual baseado nos acordes da música
     function detectCurrentKey() {
         const content = dom.songInput.value;
-        console.log('Conteúdo para análise:', content.substring(0, 100) + '...');
         
         const chords = content.match(CHORD_REGEX_GLOBAL) || [];
-        console.log('Acordes encontrados:', chords);
         
         if (chords.length === 0) {
-            console.log('Nenhum acorde encontrado');
             return null;
         }
         
@@ -1057,8 +1249,6 @@
             const cleanChord = chord.replace(/[0-9]/g, '').replace(/[mM]/g, '').replace(/[#b]/g, '');
             chordCount[cleanChord] = (chordCount[cleanChord] || 0) + 1;
         });
-        
-        console.log('Contagem de acordes:', chordCount);
         
         // Encontra o acorde mais frequente (provavelmente o tom principal)
         let mostFrequentChord = null;
@@ -1071,13 +1261,10 @@
             }
         }
         
-        console.log('Tom mais frequente:', mostFrequentChord, 'com', maxCount, 'ocorrências');
-        
         // Se não encontrou nenhum acorde válido, tenta uma abordagem mais simples
         if (!mostFrequentChord && chords.length > 0) {
             const firstChord = chords[0];
             const simpleChord = firstChord.replace(/[0-9]/g, '').replace(/[mM]/g, '').replace(/[#b]/g, '');
-            console.log('Usando primeiro acorde como fallback:', simpleChord);
             return simpleChord;
         }
         
@@ -1131,9 +1318,6 @@
         state.isTwoColumns = !state.isTwoColumns; 
         dom.outputArea.classList.toggle('two-columns', state.isTwoColumns); 
         dom.columnsToggle.textContent = state.isTwoColumns ? 'Usar 1 Coluna' : 'Usar 2 Colunas'; 
-        
-        console.log('Colunas alteradas:', state.isTwoColumns ? '2 colunas' : '1 coluna');
-        console.log('Classes do outputArea:', dom.outputArea.className);
     }
     function handleDeviceViewToggle(d) { dom.viewWrapper.classList.remove('view-desktop', 'view-tablet', 'view-mobile'); if (d !== 'desktop') { dom.viewWrapper.classList.add(`view-${d}`); } }
     function toggleFullscreen() { 
@@ -1181,10 +1365,6 @@
         const viewWrapper = dom.viewWrapper;
         const outputArea = dom.outputArea;
         
-        console.log('ViewWrapper height:', viewWrapper.scrollHeight, 'clientHeight:', viewWrapper.clientHeight);
-        console.log('OutputArea height:', outputArea.scrollHeight, 'clientHeight:', outputArea.clientHeight);
-        console.log('OutputArea content:', outputArea.innerHTML.substring(0, 100) + '...');
-        
         // Verificar se o outputArea tem conteúdo suficiente para rolar
         if (outputArea.scrollHeight <= outputArea.clientHeight) {
             alert('Não há conteúdo suficiente para rolar. Gere uma cifra primeiro.');
@@ -1212,22 +1392,16 @@
         // Garantir que o passo seja pelo menos 0.1 pixel
         scrollStep = Math.max(scrollStep, 0.1);
         state.currentScrollStep = scrollStep;
-        
-        console.log('Iniciando rolagem com intervalo:', scrollInterval, 'ms, passo:', scrollStep, 'px');
-        console.log('Speed multiplier:', speedMultiplier, 'Manual speed:', manualSpeed);
 
         state.isScrolling = true;
         state.scrollInterval = setInterval(() => {
             const currentScrollTop = outputArea.scrollTop;
             const maxScrollTop = outputArea.scrollHeight - outputArea.clientHeight;
             
-            console.log('Rolando... Current:', currentScrollTop, 'Max:', maxScrollTop, 'Step:', state.currentScrollStep);
-            
             outputArea.scrollTop += state.currentScrollStep;
             
             // Para quando chegar ao final
             if (outputArea.scrollTop >= maxScrollTop) {
-                console.log('Chegou ao final, parando rolagem');
                 stopScroll();
             }
         }, scrollInterval);
@@ -1282,36 +1456,19 @@
         
         // Atualiza o passo de rolagem
         state.currentScrollStep = Math.max(newScrollStep, 0.1);
-        
-        console.log('Velocidade atualizada - novo passo:', state.currentScrollStep, 'px');
     }
 
     function handleSaveAs() {
-        console.log('=== handleSaveAs CHAMADA ===');
-        console.log('Conteúdo da cifra:', dom.songInput.value.substring(0, 50) + '...');
-        console.log('currentSongId:', state.currentSongId);
-        console.log('currentSongData:', state.currentSongData);
-        
         if (!dom.songInput.value.trim()) {
             alert("Por favor, cole uma cifra antes de salvar.");
             return;
         }
         
-        console.log('handleSaveAs - Iniciando pré-carregamento...');
-        console.log('Elementos DOM encontrados:', {
-            songTitleInput: !!dom.songTitleInput,
-            originalKeyInput: !!dom.originalKeyInput,
-            songDuration: !!dom.songDuration,
-            songBpm: !!dom.songBpm,
-            saveCapoPosition: !!dom.saveCapoPosition
-        });
-        
         // Se é uma música já carregada (tem ID), apenas registra para preenchimento posterior
         if (state.currentSongId) {
-            console.log('Música já carregada - será preenchida após abertura do modal');
+            // Música já carregada - será preenchida após abertura do modal
         } else {
             // Música nova - comportamento atual
-            console.log('Música nova - detectando tom automaticamente');
             
             // Detecta e preenche o tom original
             const currentKey = detectCurrentKey();
@@ -1323,8 +1480,6 @@
             dom.saveCapoPosition.value = state.capoPosition;
         }
         
-        console.log('handleSaveAs - Pré-carregamento concluído');
-        
         // Limpar formulário antes de abrir o modal
         dom.saveForm.reset();
         
@@ -1335,16 +1490,8 @@
         setTimeout(() => {
             // Evita preenchimento duplicado
             if (dom.songTitleInput.value && dom.songTitleInput.value.includes('(Cópia)')) {
-                console.log('Modal já preenchido, pulando...');
                 return;
             }
-            
-            console.log('Preenchendo dados após abertura do modal...');
-            console.log('state.currentSongData completo:', state.currentSongData);
-            console.log('state.currentSongData.duration:', state.currentSongData?.duration);
-            console.log('state.currentSongData.bpm:', state.currentSongData?.bpm);
-            console.log('state.currentSongData.original_key:', state.currentSongData?.original_key);
-            console.log('state.isSaveAs:', state.isSaveAs);
             
             // Se é uma música já carregada OU é "Salvar Como", preenche com os dados atuais
             if (state.currentSongId || state.isSaveAs) {
@@ -1356,7 +1503,6 @@
                     // Só define se o campo estiver vazio ou não contiver "(Cópia)"
                     if (!dom.songTitleInput.value || !dom.songTitleInput.value.includes('(Cópia)')) {
                         dom.songTitleInput.value = newTitle;
-                        console.log('Título da música definido como:', dom.songTitleInput.value);
                     }
                 } else {
                     // Se não há título, usa o primeiro nome da música
@@ -1366,20 +1512,14 @@
                         const newTitle = firstLine + ' (Cópia)';
                         if (!dom.songTitleInput.value || !dom.songTitleInput.value.includes('(Cópia)')) {
                             dom.songTitleInput.value = newTitle;
-                            console.log('Título extraído do conteúdo:', dom.songTitleInput.value);
                         }
                     } else {
                         // Se não consegue extrair do conteúdo, usa um título padrão
                         if (!dom.songTitleInput.value || !dom.songTitleInput.value.includes('(Cópia)')) {
                             dom.songTitleInput.value = 'Nova música (Cópia)';
-                            console.log('Título padrão definido:', dom.songTitleInput.value);
                         }
                     }
                 }
-                
-                console.log('Título final definido:', dom.songTitleInput.value);
-                
-                console.log('Título final definido:', dom.songTitleInput.value);
                 
                 // Limpa a flag isSaveAs após o preenchimento
                 state.isSaveAs = false;
@@ -1389,27 +1529,20 @@
                 
                 // Tom original baseado na transposição atual
                 const totalTranspose = getTotalTranspose();
-                console.log('Transposição total:', totalTranspose);
                 if (totalTranspose !== 0) {
                     const currentKey = detectCurrentKey();
-                    console.log('Tom atual detectado:', currentKey);
                     if (currentKey) {
                         const originalKey = calculateOriginalKey(currentKey, -totalTranspose);
-                        console.log('Tom original calculado:', originalKey);
                         dom.originalKeyInput.value = originalKey;
-                        console.log('Tom original definido como:', dom.originalKeyInput.value);
                     }
                 } else {
                     // Se não há transposição, usa o tom original da música ou detecta do conteúdo
                     if (state.currentSongData && state.currentSongData.original_key) {
                         dom.originalKeyInput.value = state.currentSongData.original_key;
-                        console.log('Usando tom original da música:', dom.originalKeyInput.value);
                     } else {
-                        console.log('Detectando tom atual do conteúdo');
                         const currentKey = detectCurrentKey();
                         if (currentKey) {
                             dom.originalKeyInput.value = currentKey;
-                            console.log('Tom atual detectado e definido como:', dom.originalKeyInput.value);
                         }
                     }
                 }
@@ -1434,13 +1567,6 @@
                     }
                 }
             }
-            
-            console.log('Verificação final dos campos:');
-            console.log('Título:', dom.songTitleInput.value);
-            console.log('Tom:', dom.originalKeyInput.value);
-            console.log('Capô:', dom.saveCapoPosition.value);
-            console.log('Duração:', dom.songDuration.value);
-            console.log('BPM:', dom.songBpm.value);
         }, 50);
     }
 
@@ -1456,6 +1582,46 @@
         // Auth
         dom.loginForm.addEventListener('submit', handleLogin);
         dom.logoutBtn.addEventListener('click', handleLogout);
+        
+        // Toggle password visibility - Versão final (global)
+        window.togglePasswordVisibility = function(button) {
+            const input = button.parentElement.querySelector('input');
+            const icon = button.querySelector('i');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.className = 'fas fa-eye-slash';
+                button.setAttribute('title', 'Ocultar senha');
+            } else {
+                input.type = 'password';
+                icon.className = 'fas fa-eye';
+                button.setAttribute('title', 'Mostrar senha');
+            }
+        }
+        
+        // Event listener para toggle de senha - Versão final
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.toggle-password-btn')) {
+                const btn = e.target.closest('.toggle-password-btn');
+                window.togglePasswordVisibility(btn);
+            }
+        });
+        
+        // Inicialização para garantir que o input de senha esteja correto
+        document.addEventListener('DOMContentLoaded', function() {
+            const passwordInput = document.getElementById('password');
+            const toggleBtn = document.querySelector('.toggle-password-btn');
+            
+            // Garantir que o input de senha esteja como password
+            if (passwordInput) {
+                passwordInput.type = 'password';
+            }
+            
+            // Inicializar tooltip do botão
+            if (toggleBtn) {
+                toggleBtn.setAttribute('title', 'Mostrar senha');
+            }
+        });
         
         // Core
         dom.generateButton.addEventListener('click', handleGenerate);
@@ -1495,7 +1661,6 @@
                 const hasLoadedSong = state.currentSongData && state.currentSongData.title;
                 if (hasLoadedSong) {
                     // Para música já carregada, salva diretamente sem abrir modal
-                    console.log('Salvando música existente diretamente...');
                     try {
                         // Aplica as transposições ao conteúdo antes de salvar
                         const originalContent = dom.songInput.value;
@@ -1508,27 +1673,14 @@
                         const bpm = state.currentSongData?.bpm || null;
                         const capo_position = state.capoPosition;
                         
-                        console.log('Salvando com dados:', {
-                            title: state.currentSongData?.title,
-                            content: transposedContent.substring(0, 50) + '...',
-                            original_key,
-                            duration,
-                            bpm,
-                            capo_position,
-                            currentSongId: state.currentSongId
-                        });
-                        
                         // Se não tem currentSongId, precisa recarregar a música para obter o ID
                         if (!state.currentSongId) {
-                            console.log('Recarregando música para obter ID...');
                             // Busca a música pelo título para obter o ID
                             const songs = await fetchApi('/api/songs?filter=my_songs');
                             const song = songs.find(s => s.title === state.currentSongData.title);
                             if (song) {
                                 state.currentSongId = song.id;
-                                console.log('ID da música encontrado:', state.currentSongId);
                             } else {
-                                console.log('Música não encontrada, criando nova...');
                                 // Se não encontra, cria uma nova música
                                 const result = await fetchApi('/api/songs', {
                                     method: 'POST',
@@ -1547,7 +1699,6 @@
                             }
                         }
 
-                        console.log('Enviando PUT para:', `/api/songs/${state.currentSongId}`);
                         await fetchApi(`/api/songs/${state.currentSongId}`, { 
                             method: 'PUT', 
                             body: { 
@@ -1560,7 +1711,6 @@
                                 capo_position 
                             } 
                         });
-                        console.log('PUT realizado com sucesso!');
                         alert('Música atualizada com sucesso!');
 
                            // NÃO recarrega a música - mantém as modificações na tela
@@ -1601,7 +1751,6 @@
             handleSaveAs();
         });
         dom.saveForm.addEventListener('submit', (event) => {
-            console.log('Formulário de salvar submetido!');
             handleSaveSong(event);
         });
         dom.openSongsBtn.addEventListener('click', () => { dom.mySongsTab.classList.add('active'); dom.publicSongsTab.classList.remove('active'); loadSavedSongs('my_songs'); dom.songsModal.showModal(); });
