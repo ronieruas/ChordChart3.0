@@ -1577,32 +1577,32 @@
         dom.outputArea.scrollTop = 0;
     }
 
+    // Toggle password visibility - Versão final (global)
+    window.togglePasswordVisibility = function(button) {
+        const input = button.parentElement.querySelector('input');
+        const icon = button.querySelector('i');
+        
+        if (!input || !icon) {
+            console.error('Input ou ícone não encontrado');
+            return;
+        }
+        
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.className = 'fas fa-eye-slash';
+            button.setAttribute('title', 'Ocultar senha');
+        } else {
+            input.type = 'password';
+            icon.className = 'fas fa-eye';
+            button.setAttribute('title', 'Mostrar senha');
+        }
+    }
+
     // --- INITIALIZATION ---
     document.addEventListener('DOMContentLoaded', () => {
         // Auth
         dom.loginForm.addEventListener('submit', handleLogin);
         dom.logoutBtn.addEventListener('click', handleLogout);
-        
-        // Toggle password visibility - Versão final (global)
-        window.togglePasswordVisibility = function(button) {
-            const input = button.parentElement.querySelector('input');
-            const icon = button.querySelector('i');
-            
-            if (!input || !icon) {
-                console.error('Input ou ícone não encontrado');
-                return;
-            }
-            
-            if (input.type === 'password') {
-                input.type = 'text';
-                icon.className = 'fas fa-eye-slash';
-                button.setAttribute('title', 'Ocultar senha');
-            } else {
-                input.type = 'password';
-                icon.className = 'fas fa-eye';
-                button.setAttribute('title', 'Mostrar senha');
-            }
-        }
         
         // Event listener para toggle de senha - Versão final
         document.addEventListener('click', function(e) {
