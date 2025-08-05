@@ -1579,23 +1579,34 @@
 
     // Toggle password visibility - Versão final (global)
     window.togglePasswordVisibility = function(button) {
+        console.log('🔍 togglePasswordVisibility chamada!');
+        console.log('Button:', button);
+        
         const input = button.parentElement.querySelector('input');
         const icon = button.querySelector('i');
         
+        console.log('Input encontrado:', input);
+        console.log('Icon encontrado:', icon);
+        console.log('Input type atual:', input?.type);
+        
         if (!input || !icon) {
-            console.error('Input ou ícone não encontrado');
+            console.error('❌ Input ou ícone não encontrado');
             return;
         }
         
         if (input.type === 'password') {
+            console.log('👁️ Mudando para texto visível');
             input.type = 'text';
             icon.className = 'fas fa-eye-slash';
             button.setAttribute('title', 'Ocultar senha');
         } else {
+            console.log('🙈 Mudando para password oculto');
             input.type = 'password';
             icon.className = 'fas fa-eye';
             button.setAttribute('title', 'Mostrar senha');
         }
+        
+        console.log('✅ Toggle concluído. Novo input type:', input.type);
     }
 
     // --- INITIALIZATION ---
@@ -1606,24 +1617,35 @@
         
         // Event listener para toggle de senha - Versão final
         document.addEventListener('click', function(e) {
+            console.log('🖱️ Click detectado em:', e.target);
             if (e.target.closest('.toggle-password-btn')) {
+                console.log('🎯 Botão toggle encontrado!');
                 const btn = e.target.closest('.toggle-password-btn');
+                console.log('🔧 Chamando togglePasswordVisibility...');
                 window.togglePasswordVisibility(btn);
+            } else {
+                console.log('❌ Botão toggle NÃO encontrado');
             }
         });
         
         // Inicialização para garantir que todos os inputs de senha estejam corretos
         function initializePasswordInputs() {
+            console.log('🔧 Inicializando inputs de senha...');
+            
             // Inicializar todos os inputs de senha
             const passwordInputs = document.querySelectorAll('input[type="password"]');
+            console.log('📝 Inputs de senha encontrados:', passwordInputs.length);
             passwordInputs.forEach(input => {
                 input.type = 'password';
+                console.log('✅ Input inicializado:', input.id || 'sem id');
             });
             
             // Inicializar todos os botões de toggle
             const toggleBtns = document.querySelectorAll('.toggle-password-btn');
+            console.log('👁️ Botões toggle encontrados:', toggleBtns.length);
             toggleBtns.forEach(btn => {
                 btn.setAttribute('title', 'Mostrar senha');
+                console.log('✅ Botão toggle inicializado:', btn);
             });
         }
         
