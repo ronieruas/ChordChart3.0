@@ -1588,6 +1588,11 @@
             const input = button.parentElement.querySelector('input');
             const icon = button.querySelector('i');
             
+            if (!input || !icon) {
+                console.error('Input ou ícone não encontrado');
+                return;
+            }
+            
             if (input.type === 'password') {
                 input.type = 'text';
                 icon.className = 'fas fa-eye-slash';
@@ -1607,20 +1612,37 @@
             }
         });
         
-        // Inicialização para garantir que o input de senha esteja correto
-        document.addEventListener('DOMContentLoaded', function() {
-            const passwordInput = document.getElementById('password');
-            const toggleBtn = document.querySelector('.toggle-password-btn');
+        // Inicialização para garantir que todos os inputs de senha estejam corretos
+        function initializePasswordInputs() {
+            // Inicializar todos os inputs de senha
+            const passwordInputs = document.querySelectorAll('input[type="password"]');
+            passwordInputs.forEach(input => {
+                input.type = 'password';
+            });
             
-            // Garantir que o input de senha esteja como password
-            if (passwordInput) {
-                passwordInput.type = 'password';
-            }
-            
-            // Inicializar tooltip do botão
-            if (toggleBtn) {
-                toggleBtn.setAttribute('title', 'Mostrar senha');
-            }
+            // Inicializar todos os botões de toggle
+            const toggleBtns = document.querySelectorAll('.toggle-password-btn');
+            toggleBtns.forEach(btn => {
+                btn.setAttribute('title', 'Mostrar senha');
+            });
+        }
+        
+        // Executar inicialização
+        initializePasswordInputs();
+        
+        // Re-inicializar quando modais são abertos
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'open') {
+                    setTimeout(initializePasswordInputs, 100);
+                }
+            });
+        });
+        
+        // Observar todos os modais
+        const modals = document.querySelectorAll('dialog');
+        modals.forEach(modal => {
+            observer.observe(modal, { attributes: true });
         });
         
         // Core
@@ -1761,9 +1783,19 @@
         // Users
         dom.manageUsersBtn.addEventListener('click', handleOpenUserManagement);
         if(dom.userManagementModal) dom.modalUsersList.addEventListener('click', handleDeleteUserFromModal);
-        if(dom.createUserModal) dom.openCreateUserModalBtn.addEventListener('click', () => { dom.createUserFeedback.classList.add('hidden'); dom.createUserForm.reset(); dom.createUserModal.showModal(); });
+        if(dom.createUserModal) dom.openCreateUserModalBtn.addEventListener('click', () => { 
+            dom.createUserFeedback.classList.add('hidden'); 
+            dom.createUserForm.reset(); 
+            dom.createUserModal.showModal(); 
+            setTimeout(initializePasswordInputs, 100);
+        });
         if(dom.createUserForm) dom.createUserForm.addEventListener('submit', handleCreateUser);
-        dom.changePasswordBtn.addEventListener('click', () => { dom.changePasswordFeedback.classList.add('hidden'); dom.changePasswordForm.reset(); dom.changePasswordModal.showModal(); });
+        dom.changePasswordBtn.addEventListener('click', () => { 
+            dom.changePasswordFeedback.classList.add('hidden'); 
+            dom.changePasswordForm.reset(); 
+            dom.changePasswordModal.showModal(); 
+            setTimeout(initializePasswordInputs, 100);
+        });
         dom.changePasswordForm.addEventListener('submit', handleChangePassword);
         
         // Setlists
@@ -1778,21 +1810,11 @@
             cancelBtns.forEach(btn => btn.addEventListener('click', () => dom.addSongsToSetlistModal.close()));
         }
 
-        // Password Visibility Toggle
+        // Password Visibility Toggle - Versão unificada
         document.body.addEventListener('click', function(event) {
             const toggleBtn = event.target.closest('.toggle-password-btn');
             if (toggleBtn) {
-                const input = toggleBtn.previousElementSibling;
-                const icon = toggleBtn.querySelector('i');
-                if (input.type === "password") {
-                    input.type = "text";
-                    icon.classList.remove('fa-eye');
-                    icon.classList.add('fa-eye-slash');
-                } else {
-                    input.type = "password";
-                    icon.classList.remove('fa-eye-slash');
-                    icon.classList.add('fa-eye');
-                }
+                window.togglePasswordVisibility(toggleBtn);
             }
         });
 
