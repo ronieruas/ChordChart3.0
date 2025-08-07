@@ -16,7 +16,7 @@ Execute o comando dentro do container Docker onde todas as dependências já est
 cd /opt/chordchart
 
 # Executar via Docker
-docker exec chordchart_pro_backend_prod python3 create_user.py admin --generate-password
+docker exec chordchart_pro_backend python3 create_user.py admin --generate-password
 ```
 
 **Ou usar o script automatizado:**

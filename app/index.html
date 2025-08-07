@@ -1066,24 +1066,22 @@
                 sections.push(d);
             });
             
-            // Distribuir seções entre as colunas de forma mais inteligente
+            // Distribuir seções entre as colunas mantendo a ordem sequencial
             const leftColumn = [];
             const rightColumn = [];
-            let leftHeight = 0;
-            let rightHeight = 0;
             
-            sections.forEach(section => {
-                // Estimativa simples de altura baseada no número de elementos
-                const estimatedHeight = section.children.length;
-                
-                if (leftHeight <= rightHeight) {
-                    leftColumn.push(section);
-                    leftHeight += estimatedHeight;
-                } else {
-                    rightColumn.push(section);
-                    rightHeight += estimatedHeight;
-                }
-            });
+            // Calcular o ponto médio para dividir as seções
+            const midPoint = Math.ceil(sections.length / 2);
+            
+            // Preencher a coluna esquerda com a primeira metade das seções
+            for (let i = 0; i < midPoint; i++) {
+                leftColumn.push(sections[i]);
+            }
+            
+            // Preencher a coluna direita com a segunda metade das seções
+            for (let i = midPoint; i < sections.length; i++) {
+                rightColumn.push(sections[i]);
+            }
             
             // Criar containers para as colunas
             const leftContainer = document.createElement('div');
