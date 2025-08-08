@@ -1102,7 +1102,7 @@
                 sections.push(d);
             });
             
-            // Distribuir seções entre as colunas de forma equilibrada
+            // Distribuir seções entre as colunas de forma equilibrada, mantendo a ordem sequencial
             const leftColumn = [];
             const rightColumn = [];
             
@@ -1126,19 +1126,35 @@
                 };
             });
             
-            let leftSize = 0;
-            let rightSize = 0;
+            // Calcular o tamanho total de todas as seções
+            const totalSize = sectionSizes.reduce((sum, section) => sum + section.size, 0);
+            const halfSize = totalSize / 2;
             
-            // Distribuir as seções de forma equilibrada, mantendo a ordem sequencial
+            // Distribuir as seções em ordem sequencial, tentando manter o equilíbrio de tamanho
+            let leftSize = 0;
+            
+            // Primeira passagem: colocar seções na coluna esquerda até chegar próximo da metade do tamanho total
             for (let i = 0; i < sections.length; i++) {
-                // Adicionar à coluna com menos conteúdo
-                if (leftSize <= rightSize) {
-                    leftColumn.push(sections[i]);
-                    leftSize += sectionSizes[i].size;
-                } else {
-                    rightColumn.push(sections[i]);
-                    rightSize += sectionSizes[i].size;
+                leftColumn.push(sections[i]);
+                leftSize += sectionSizes[i].size;
+                
+                // Se ultrapassamos a metade do tamanho total, verificamos se é melhor parar aqui
+                if (leftSize >= halfSize && i < sections.length - 1) {
+                    // Verificar se adicionar mais uma seção deixaria mais desequilibrado
+                    const nextSectionSize = sectionSizes[i + 1].size;
+                    const withNextSection = Math.abs((leftSize + nextSectionSize) - (totalSize - leftSize - nextSectionSize));
+                    const withoutNextSection = Math.abs(leftSize - (totalSize - leftSize));
+                    
+                    // Se parar aqui resulta em melhor equilíbrio, paramos
+                    if (withoutNextSection <= withNextSection) {
+                        break;
+                    }
                 }
+            }
+            
+            // Segunda passagem: colocar as seções restantes na coluna direita
+            for (let i = leftColumn.length; i < sections.length; i++) {
+                rightColumn.push(sections[i]);
             }
             
             // Criar containers para as colunas
