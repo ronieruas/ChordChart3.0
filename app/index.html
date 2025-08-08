@@ -19,12 +19,17 @@
             padding: 1rem;
         }
         .output-container.two-columns { 
-            display: grid !important;
-            grid-template-columns: 1fr 1fr !important;
-            gap: 1rem !important;
-            align-items: start !important;
+            /* Usar flexbox em vez de grid para melhor consistência com a impressão */
+            display: flex !important;
+            flex-direction: row !important;
+            flex-wrap: nowrap !important;
+            gap: 2rem !important;
+            align-items: flex-start !important;
         }
         .column-container {
+            /* Cada coluna ocupa metade do espaço disponível */
+            width: 50% !important;
+            flex: 0 0 50% !important;
             display: flex;
             flex-direction: column;
             gap: 0.5rem;
@@ -38,11 +43,17 @@
         
         /* Na impressão, permitir quebras para economizar páginas */
         @media print {
-            /* Permitir que seções individuais quebrem entre páginas apenas quando necessário,
-               mas priorizar manter as colunas inteiras em uma página */
+            /* Tentar evitar quebras dentro das seções, mas permitir se necessário */
             .section-container { 
-                break-inside: auto !important; 
-                page-break-inside: auto !important;
+                break-inside: avoid !important; 
+                page-break-inside: avoid !important;
+                /* Adicionar margem para melhorar a separação visual */
+                margin-bottom: 1.5rem !important;
+            }
+            /* Permitir quebra após a seção se necessário */
+            .section-container:not(:last-child) {
+                break-after: auto !important;
+                page-break-after: auto !important;
             }
         }
         .section-container h3 {
@@ -176,20 +187,25 @@
                 overflow: visible !important;
             } 
             .output-container.two-columns { 
-                display: grid !important;
-                grid-template-columns: 1fr 1fr !important;
-                gap: 1rem !important;
-                align-items: start !important;
-                /* Garantir que as colunas não quebrem entre páginas */
-                break-before: avoid !important;
-                break-after: avoid !important;
+                /* Usar flexbox em vez de grid para melhor controle de impressão */
+                display: flex !important;
+                flex-direction: row !important;
+                flex-wrap: nowrap !important;
+                gap: 2rem !important;
+                align-items: flex-start !important;
+                /* Evitar quebras de página dentro do container */
+                break-inside: avoid-page !important;
+                page-break-inside: avoid !important;
             }
             .column-container {
+                /* Cada coluna ocupa metade do espaço disponível */
+                width: 50% !important;
+                flex: 0 0 50% !important;
                 display: flex !important;
                 flex-direction: column !important;
                 gap: 0.5rem !important;
                 /* Garantir que cada coluna seja tratada como uma unidade indivisível */
-                break-inside: avoid !important;
+                break-inside: avoid-page !important;
                 page-break-inside: avoid !important;
             } 
             h2, h3 { color: black !important; } 
@@ -1324,6 +1340,8 @@
         state.isTwoColumns = !state.isTwoColumns; 
         dom.outputArea.classList.toggle('two-columns', state.isTwoColumns); 
         dom.columnsToggle.textContent = state.isTwoColumns ? 'Usar 1 Coluna' : 'Usar 2 Colunas'; 
+        // Renderizar novamente para garantir que o layout seja aplicado corretamente
+        render();
     }
     function handleDeviceViewToggle(d) { dom.viewWrapper.classList.remove('view-desktop', 'view-tablet', 'view-mobile'); if (d !== 'desktop') { dom.viewWrapper.classList.add(`view-${d}`); } }
     function toggleFullscreen() { 
