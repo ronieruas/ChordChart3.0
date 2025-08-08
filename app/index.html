@@ -23,13 +23,15 @@
             display: table !important;
             width: 100% !important;
             table-layout: fixed !important;
+            border-collapse: separate !important;
+            border-spacing: 1rem 0 !important;
         }
         .column-container {
             /* Cada coluna ocupa metade do espaço disponível */
             display: table-cell !important;
             width: 50% !important;
-            padding-right: 1rem !important;
             vertical-align: top !important;
+            /* Remover padding-right pois já temos border-spacing na tabela */
         }
         /* Garantir que as seções não quebrem entre colunas na tela */
         .section-container { 
@@ -41,7 +43,7 @@
         
         /* Na impressão, permitir quebras para economizar páginas */
         @media print {
-            /* Tentar evitar quebras dentro das seções, mas permitir se necessário */
+            /* Configurações para impressão de seções */
             .section-container { 
                 break-inside: avoid !important; 
                 page-break-inside: avoid !important;
@@ -53,6 +55,16 @@
             .section-container:not(:last-child) {
                 break-after: auto !important;
                 page-break-after: auto !important;
+            }
+            
+            /* Forçar que cada coluna comece em uma nova página se necessário */
+            .column-container:first-child {
+                break-after: avoid !important;
+                page-break-after: avoid !important;
+            }
+            .column-container:last-child {
+                break-before: auto !important;
+                page-break-before: auto !important;
             }
         }
         .section-container h3 {
@@ -186,10 +198,12 @@
                 overflow: visible !important;
             } 
             .output-container.two-columns { 
-                /* Usar flexbox com display: table para melhor controle de impressão */
+                /* Usar layout de tabela para melhor controle de impressão */
                 display: table !important;
                 width: 100% !important;
                 table-layout: fixed !important;
+                border-collapse: separate !important;
+                border-spacing: 1rem 0 !important;
                 /* Evitar quebras de página dentro do container */
                 break-inside: avoid-page !important;
                 page-break-inside: avoid !important;
@@ -198,7 +212,6 @@
                 /* Cada coluna ocupa metade do espaço disponível */
                 display: table-cell !important;
                 width: 50% !important;
-                padding-right: 1rem !important;
                 vertical-align: top !important;
                 /* Garantir que cada coluna seja tratada como uma unidade indivisível */
                 break-inside: avoid !important;
@@ -1089,21 +1102,43 @@
                 sections.push(d);
             });
             
-            // Distribuir seções entre as colunas mantendo a ordem sequencial
+            // Distribuir seções entre as colunas de forma equilibrada
             const leftColumn = [];
             const rightColumn = [];
             
-            // Calcular o ponto médio para dividir as seções
-            const midPoint = Math.ceil(sections.length / 2);
+            // Estimar o tamanho de cada seção de forma mais precisa
+            const sectionSizes = sections.map((section, index) => {
+                // Contar o número de elementos filhos
+                const childCount = section.childElementCount;
+                
+                // Contar o número de quebras de linha no texto como estimativa de altura
+                const textContent = section.textContent || '';
+                const lineBreaks = (textContent.match(/\n/g) || []).length;
+                
+                // Contar elementos específicos que ocupam mais espaço
+                const chordOutputs = section.querySelectorAll('.chord-output').length;
+                const lyricOutputs = section.querySelectorAll('.lyric-output').length;
+                
+                // Calcular tamanho estimado com base em todos esses fatores
+                return { 
+                    index, 
+                    size: childCount + lineBreaks + (chordOutputs * 1.5) + lyricOutputs + (textContent.length / 50)
+                };
+            });
             
-            // Preencher a coluna esquerda com a primeira metade das seções
-            for (let i = 0; i < midPoint; i++) {
-                leftColumn.push(sections[i]);
-            }
+            let leftSize = 0;
+            let rightSize = 0;
             
-            // Preencher a coluna direita com a segunda metade das seções
-            for (let i = midPoint; i < sections.length; i++) {
-                rightColumn.push(sections[i]);
+            // Distribuir as seções de forma equilibrada, mantendo a ordem sequencial
+            for (let i = 0; i < sections.length; i++) {
+                // Adicionar à coluna com menos conteúdo
+                if (leftSize <= rightSize) {
+                    leftColumn.push(sections[i]);
+                    leftSize += sectionSizes[i].size;
+                } else {
+                    rightColumn.push(sections[i]);
+                    rightSize += sectionSizes[i].size;
+                }
             }
             
             // Criar containers para as colunas
