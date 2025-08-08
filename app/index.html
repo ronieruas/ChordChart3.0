@@ -38,6 +38,8 @@
         
         /* Na impressão, permitir quebras para economizar páginas */
         @media print {
+            /* Permitir que seções individuais quebrem entre páginas apenas quando necessário,
+               mas priorizar manter as colunas inteiras em uma página */
             .section-container { 
                 break-inside: auto !important; 
                 page-break-inside: auto !important;
@@ -178,11 +180,17 @@
                 grid-template-columns: 1fr 1fr !important;
                 gap: 1rem !important;
                 align-items: start !important;
+                /* Garantir que as colunas não quebrem entre páginas */
+                break-before: avoid !important;
+                break-after: avoid !important;
             }
             .column-container {
                 display: flex !important;
                 flex-direction: column !important;
                 gap: 0.5rem !important;
+                /* Garantir que cada coluna seja tratada como uma unidade indivisível */
+                break-inside: avoid !important;
+                page-break-inside: avoid !important;
             } 
             h2, h3 { color: black !important; } 
             .chord-output, .summary-chord { color: #1e40af !important; } 
