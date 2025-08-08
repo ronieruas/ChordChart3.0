@@ -19,26 +19,24 @@
             padding: 1rem;
         }
         .output-container.two-columns { 
-            /* Usar flexbox em vez de grid para melhor consistência com a impressão */
-            display: flex !important;
-            flex-direction: row !important;
-            flex-wrap: nowrap !important;
-            gap: 2rem !important;
-            align-items: flex-start !important;
+            /* Usar layout de tabela para melhor consistência com a impressão */
+            display: table !important;
+            width: 100% !important;
+            table-layout: fixed !important;
         }
         .column-container {
             /* Cada coluna ocupa metade do espaço disponível */
+            display: table-cell !important;
             width: 50% !important;
-            flex: 0 0 50% !important;
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
+            padding-right: 1rem !important;
+            vertical-align: top !important;
         }
         /* Garantir que as seções não quebrem entre colunas na tela */
         .section-container { 
             break-inside: avoid !important; 
             page-break-inside: avoid !important;
-            margin-bottom: 0.5rem !important;
+            margin-bottom: 1rem !important;
+            display: block !important;
         }
         
         /* Na impressão, permitir quebras para economizar páginas */
@@ -49,6 +47,7 @@
                 page-break-inside: avoid !important;
                 /* Adicionar margem para melhorar a separação visual */
                 margin-bottom: 1.5rem !important;
+                display: block !important;
             }
             /* Permitir quebra após a seção se necessário */
             .section-container:not(:last-child) {
@@ -187,26 +186,26 @@
                 overflow: visible !important;
             } 
             .output-container.two-columns { 
-                /* Usar flexbox em vez de grid para melhor controle de impressão */
-                display: flex !important;
-                flex-direction: row !important;
-                flex-wrap: nowrap !important;
-                gap: 2rem !important;
-                align-items: flex-start !important;
+                /* Usar flexbox com display: table para melhor controle de impressão */
+                display: table !important;
+                width: 100% !important;
+                table-layout: fixed !important;
                 /* Evitar quebras de página dentro do container */
                 break-inside: avoid-page !important;
                 page-break-inside: avoid !important;
             }
             .column-container {
                 /* Cada coluna ocupa metade do espaço disponível */
+                display: table-cell !important;
                 width: 50% !important;
-                flex: 0 0 50% !important;
-                display: flex !important;
-                flex-direction: column !important;
-                gap: 0.5rem !important;
+                padding-right: 1rem !important;
+                vertical-align: top !important;
                 /* Garantir que cada coluna seja tratada como uma unidade indivisível */
-                break-inside: avoid-page !important;
+                break-inside: avoid !important;
                 page-break-inside: avoid !important;
+                /* Forçar que a coluna permaneça na mesma página */
+                break-before: avoid !important;
+                page-break-before: avoid !important;
             } 
             h2, h3 { color: black !important; } 
             .chord-output, .summary-chord { color: #1e40af !important; } 
