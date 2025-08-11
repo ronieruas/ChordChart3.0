@@ -45,8 +45,9 @@
         @media print {
             /* Configurações para impressão de seções */
             .section-container { 
-                break-inside: avoid !important; 
-                page-break-inside: avoid !important;
+                /* Permitir quebra de seção entre páginas/colunas */
+                break-inside: auto !important; 
+                page-break-inside: auto !important;
                 /* Adicionar margem para melhorar a separação visual */
                 margin-bottom: 1.5rem !important;
                 display: block !important;
@@ -61,10 +62,17 @@
             .column-container:first-child {
                 break-after: avoid !important;
                 page-break-after: avoid !important;
+                /* Garantir que a primeira coluna não quebre entre páginas */
+                break-inside: avoid !important;
+                page-break-inside: avoid !important;
+                /* Definir altura máxima para a primeira coluna */
+                max-height: 100vh !important;
+                overflow: hidden !important;
             }
             .column-container:last-child {
-                break-before: auto !important;
-                page-break-before: auto !important;
+                /* Permitir que a segunda coluna continue na mesma página se houver espaço */
+                /* break-before: page !important; */
+                /* page-break-before: always !important; */
             }
         }
         .section-container h3 {
@@ -207,6 +215,9 @@
                 /* Evitar quebras de página dentro do container */
                 break-inside: avoid-page !important;
                 page-break-inside: avoid !important;
+                /* Forçar que o container comece em uma nova página se necessário */
+                break-before: page !important;
+                page-break-before: always !important;
             }
             .column-container {
                 /* Cada coluna ocupa metade do espaço disponível */
@@ -349,7 +360,7 @@
                  <div><h3 class="font-semibold text-gray-800 mb-2">Capô</h3><div class="bg-gray-50 p-3 rounded-md"><div class="flex items-center justify-between mb-2"><label for="capo-position" class="text-sm">Posição do Capô:</label><span id="capo-status" class="text-sm font-medium text-blue-600">0</span></div><input id="capo-position" type="range" min="0" max="12" value="0" class="w-full mb-2"><div id="capo-info" class="text-xs text-gray-600 text-center">Sem capô</div></div></div>
                  <div><h3 class="font-semibold text-gray-800 mb-2">Formatação da Cifra</h3><div class="space-y-3 bg-gray-50 p-3 rounded-md"><div class="flex items-center justify-between"><label for="lyrics-size" class="text-sm">Letra:</label><input id="lyrics-size" type="range" min="10" max="32" value="16" class="w-2/3"><input id="lyrics-color" type="color" value="#374151" class="w-8 h-8 p-0 border-none rounded"></div><div class="flex items-center justify-between"><label for="chords-size" class="text-sm">Acordes:</label><input id="chords-size" type="range" min="10" max="32" value="16" class="w-2/3"><input id="chords-color" type="color" value="#2563eb" class="w-8 h-8 p-0 border-none rounded"></div></div></div>
                  <div><h3 class="font-semibold text-gray-800 mb-2">Layout e Visualização</h3><div class="grid grid-cols-2 gap-2 bg-gray-50 p-3 rounded-md"><button id="view-mode-toggle" class="bg-gray-200 py-2 rounded-md text-sm">Ver Mapa</button><button id="columns-toggle" class="bg-gray-200 py-2 rounded-md text-sm">Usar 2 Colunas</button><button onclick="window.print()" class="col-span-2 bg-green-600 text-white hover:bg-green-700 py-2 rounded-md text-sm">Imprimir / Salvar PDF</button></div><div class="flex justify-center gap-2 mt-2 bg-gray-50 p-3 rounded-md"><button data-view="desktop" class="view-toggle-btn p-2 text-gray-500 hover:text-blue-600" title="Desktop"><i class="fas fa-desktop"></i></button><button data-view="tablet" class="view-toggle-btn p-2 text-gray-500 hover:text-blue-600" title="Tablet"><i class="fas fa-tablet-alt"></i></button><button data-view="mobile" class="view-toggle-btn p-2 text-gray-500 hover:text-blue-600" title="Mobile"><i class="fas fa-mobile-alt"></i></button></div></div>
-                 <div><h3 class="font-semibold text-gray-800 mb-2">Rolagem Automática</h3><div class="bg-gray-50 p-3 rounded-md"><div class="flex items-center justify-between mb-2"><button id="scroll-toggle" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md text-sm"><i class="fas fa-play mr-1"></i>Iniciar Rolagem</button><span id="scroll-status" class="text-sm text-gray-600">Parado</span></div><div class="space-y-3"><div class="flex items-center justify-between"><label for="scroll-speed" class="text-sm">Velocidade:</label><span id="speed-display" class="text-sm font-medium text-blue-600">1x</span></div><input id="scroll-speed" type="range" min="0.5" max="3" step="0.1" value="1" class="w-full mb-2"><div class="flex items-center justify-between"><label for="manual-speed" class="text-sm">Velocidade Manual:</label><input type="number" id="manual-speed" min="0.1" max="5" step="0.1" value="1" class="w-16 p-1 border rounded text-sm"></div><div class="text-xs text-gray-500">Velocidade baseada no BPM da música</div></div></div></div>
+                 <div><h3 class="font-semibold text-gray-800 mb-2">Rolagem Automática</h3><div class="bg-gray-50 p-3 rounded-md"><div class="flex items-center justify-between mb-2"><button id="scroll-toggle" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md text-sm"><i class="fas fa-play mr-1"></i>Iniciar Rolagem</button><span id="scroll-status" class="text-sm text-gray-600">Parado</span></div><div class="space-y-3"><div class="flex items-center justify-between"><label for="scroll-speed" class="text-sm">Velocidade:</label><span id="speed-display" class="text-sm font-medium text-blue-600">1x</span></div><input id="scroll-speed" type="range" min="0.5" max="3" step="0.1" value="1" class="w-full mb-2"><div class="flex items-center justify-between"><label for="manual-speed" class="text-sm">Velocidade Manual:</label><input type="number" id="manual-speed" min="0.01" max="5" step="0.01" value="1" class="w-16 p-1 border rounded text-sm"></div><div class="text-xs text-gray-500">Velocidade baseada no BPM da música</div></div></div></div>
             </div>
         </aside>
         <main class="flex-1 p-4 sm:p-8 bg-gray-100">
@@ -1128,27 +1139,28 @@
             
             // Calcular o tamanho total de todas as seções
             const totalSize = sectionSizes.reduce((sum, section) => sum + section.size, 0);
-            const halfSize = totalSize / 2;
             
-            // Distribuir as seções em ordem sequencial, tentando manter o equilíbrio de tamanho
+            // Definir um limite mais conservador para a primeira coluna (40% do total)
+            // para garantir que ela não ultrapasse o tamanho de uma página
+            const maxFirstColumnSize = totalSize * 0.4;
+            
+            // Distribuir as seções em ordem sequencial, limitando o tamanho da primeira coluna
             let leftSize = 0;
             
-            // Primeira passagem: colocar seções na coluna esquerda até chegar próximo da metade do tamanho total
+            // Primeira passagem: colocar seções na coluna esquerda até atingir o limite
             for (let i = 0; i < sections.length; i++) {
+                // Verificar se adicionar esta seção ultrapassaria o limite
+                if (leftSize + sectionSizes[i].size > maxFirstColumnSize && i > 0) {
+                    // Se ultrapassar e não for a primeira seção, paramos aqui
+                    break;
+                }
+                
                 leftColumn.push(sections[i]);
                 leftSize += sectionSizes[i].size;
                 
-                // Se ultrapassamos a metade do tamanho total, verificamos se é melhor parar aqui
-                if (leftSize >= halfSize && i < sections.length - 1) {
-                    // Verificar se adicionar mais uma seção deixaria mais desequilibrado
-                    const nextSectionSize = sectionSizes[i + 1].size;
-                    const withNextSection = Math.abs((leftSize + nextSectionSize) - (totalSize - leftSize - nextSectionSize));
-                    const withoutNextSection = Math.abs(leftSize - (totalSize - leftSize));
-                    
-                    // Se parar aqui resulta em melhor equilíbrio, paramos
-                    if (withoutNextSection <= withNextSection) {
-                        break;
-                    }
+                // Se já temos pelo menos 2 seções e estamos próximos do limite, paramos
+                if (i >= 1 && leftSize >= maxFirstColumnSize * 0.8) {
+                    break;
                 }
             }
             
@@ -1225,7 +1237,11 @@
         
         const allChords = [...new Set(state.songStructure.flatMap(s => s.chordSequence))].map(c => transposeChord(c, getTotalTranspose())); 
         dom.uniqueChordsArea.innerHTML = `<h2 class="text-xl font-bold text-gray-800 mb-2 mt-4 border-t pt-4">Notas da Música</h2><div class="flex flex-wrap gap-2">${allChords.map(c => `<span class="bg-gray-200 text-gray-800 px-3 py-1 rounded-md text-sm font-medium">${c}</span>`).join('')}</div>`; 
-        dom.summaryArea.innerHTML = `<h2 class="text-xl font-bold text-gray-800 mb-2 mt-4 border-t pt-4">Estrutura Completa</h2><div class="p-4 bg-blue-50 rounded-lg text-sm leading-relaxed">${state.songStructure.filter(s => s.chordSequence.length > 0).map(s => `<strong class="text-blue-800">[${s.name}]</strong> <span class="summary-chord">(${formatChordSequenceWithPatterns(s.chordSequence, getTotalTranspose())})</span>`).join(' <span class="font-bold text-blue-400">&rarr;</span> ')}</div>`; 
+        if (state.currentView === 'map') {
+            dom.summaryArea.innerHTML = `<h2 class="text-xl font-bold text-gray-800 mb-2 mt-4 border-t pt-4">Estrutura Completa</h2><div class="p-4 bg-blue-50 rounded-lg text-sm leading-relaxed">${state.songStructure.filter(s => s.chordSequence.length > 0).map(s => `<strong class="text-blue-800">[${s.name}]</strong> <span class="summary-chord">(${formatChordSequenceWithPatterns(s.chordSequence, getTotalTranspose())})</span>`).join(' <span class="font-bold text-blue-400">&rarr;</span> ')}</div>`; 
+        } else {
+            dom.summaryArea.innerHTML = ''; // Limpa a área se não estiver no modo mapa
+        } 
     }
 
     // --- UI EVENT HANDLERS ---
@@ -1445,37 +1461,33 @@
             return;
         }
         
-        let scrollInterval;
-        let scrollStep;
-        
-        if (state.currentSongData && state.currentSongData.bpm) {
-            // Se tem BPM configurado, calcula baseado no BPM
-            const bpm = state.currentSongData.bpm;
-            const beatsPerSecond = bpm / 60;
-            const secondsPerBeat = 1 / beatsPerSecond;
-            scrollInterval = 100; // Intervalo de 100ms para rolagem mais controlada
-            // Corrigindo a lógica: multiplicar pela velocidade manual (não dividir)
-            const baseStep = (secondsPerBeat * 4 * 1000 * manualSpeed) / (speedMultiplier * 1000);
-            scrollStep = Math.max(0.1, Math.min(baseStep, 2.0)); // Limita entre 0.1 e 2.0
-        } else {
-            // Se não tem BPM, usa velocidade manual
-            scrollInterval = 100; // Intervalo de 100ms para rolagem mais controlada
-            scrollStep = Math.max(0.1, 0.5 * manualSpeed); // Passo mínimo 0.1, baseado na velocidade manual
-        }
+        let scrollInterval = 100; // Intervalo de 100ms para rolagem mais controlada
+        let scrollStep = 0.5 * manualSpeed; // Baseado na velocidade manual
 
-        // Garantir que o passo seja pelo menos 0.1 pixel
-        scrollStep = Math.max(scrollStep, 0.1);
+
+        // Garantir que o passo seja pelo menos 0.01 pixel para permitir rolagem muito lenta
+        scrollStep = Math.max(scrollStep, 0.01);
         state.currentScrollStep = scrollStep;
+        state.scrollAccumulator = 0; // Acumulador para a rolagem
 
         state.isScrolling = true;
         state.scrollInterval = setInterval(() => {
-            const currentScrollTop = outputArea.scrollTop;
             const maxScrollTop = outputArea.scrollHeight - outputArea.clientHeight;
             
-            outputArea.scrollTop += state.currentScrollStep;
+            // Adiciona o passo de rolagem ao acumulador
+            state.scrollAccumulator += state.currentScrollStep;
+            
+            // Calcula a quantidade de pixels a rolar
+            const scrollAmount = Math.floor(state.scrollAccumulator);
+
+            if (scrollAmount > 0) {
+                outputArea.scrollTop += scrollAmount;
+                state.scrollAccumulator -= scrollAmount; // Mantém a parte fracionária
+            }
             
             // Para quando chegar ao final
             if (outputArea.scrollTop >= maxScrollTop) {
+                outputArea.scrollTop = maxScrollTop; // Garante que não ultrapasse o limite
                 stopScroll();
             }
         }, scrollInterval);
@@ -1515,21 +1527,11 @@
         const speedMultiplier = parseFloat(dom.scrollSpeed.value) || 1;
         const manualSpeed = parseFloat(dom.manualSpeed.value) || 1;
         
-        let newScrollStep;
+        let newScrollStep = 0.5 * manualSpeed;
         
-        if (state.currentSongData && state.currentSongData.bpm) {
-            const bpm = state.currentSongData.bpm;
-            const beatsPerSecond = bpm / 60;
-            const secondsPerBeat = 1 / beatsPerSecond;
-            // Corrigindo a lógica: multiplicar pela velocidade manual (não dividir)
-            const baseStep = (secondsPerBeat * 4 * 1000 * manualSpeed) / (speedMultiplier * 1000);
-            newScrollStep = Math.max(0.1, Math.min(baseStep, 2.0));
-        } else {
-            newScrollStep = Math.max(0.1, 0.5 * manualSpeed);
-        }
         
-        // Atualiza o passo de rolagem
-        state.currentScrollStep = Math.max(newScrollStep, 0.1);
+        // Atualiza o passo de rolagem, garantindo um mínimo de 0.01 pixel
+        state.currentScrollStep = Math.max(newScrollStep, 0.01);
     }
 
     function handleSaveAs() {

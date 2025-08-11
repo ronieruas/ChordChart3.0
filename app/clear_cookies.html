@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limpar Cookies - ChordChart Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 font-sans">
+    <div class="container mx-auto px-4 py-8 max-w-md">
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+            <h1 class="text-2xl font-bold text-blue-600 mb-4">Limpar Cookies - ChordChart Pro</h1>
+            <p class="text-gray-600 mb-4">Esta página ajuda a resolver problemas de login limpando os cookies armazenados pelo navegador.</p>
+            
+            <div id="cookie-info" class="mb-6 p-4 bg-gray-100 rounded-lg">
+                <h2 class="font-semibold mb-2">Cookies Atuais:</h2>
+                <pre id="current-cookies" class="text-xs overflow-auto max-h-40 p-2 bg-gray-200 rounded">Carregando...</pre>
+            </div>
+            
+            <div class="space-y-4">
+                <button id="clear-cookies" class="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200">
+                    <i class="fas fa-trash-alt mr-2"></i> Limpar Todos os Cookies
+                </button>
+                
+                <button id="clear-session" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200">
+                    <i class="fas fa-cookie-bite mr-2"></i> Limpar Apenas Cookie de Sessão
+                </button>
+                
+                <a href="/" class="block w-full text-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200">
+                    <i class="fas fa-sign-in-alt mr-2"></i> Voltar para Login
+                </a>
+            </div>
+        </div>
+        
+        <div id="result" class="hidden p-4 rounded-lg mb-6"></div>
+        
+        <div class="text-center text-sm text-gray-500">
+            <p>Se continuar tendo problemas, tente:</p>
+            <ul class="list-disc text-left pl-6 mt-2">
+                <li>Usar o modo anônimo/privado do navegador</li>
+                <li>Tentar outro navegador</li>
+                <li>Verificar se há bloqueadores de cookies ativos</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Exibir cookies atuais
+            function displayCookies() {
+                const cookieDisplay = document.getElementById('current-cookies');
+                const cookies = document.cookie;
+                cookieDisplay.textContent = cookies.length > 0 ? cookies : 'Nenhum cookie encontrado';
+            }
+            
+            // Mostrar resultado
+            function showResult(message, isSuccess) {
+                const resultDiv = document.getElementById('result');
+                resultDiv.textContent = message;
+                resultDiv.classList.remove('hidden', 'bg-green-100', 'text-green-800', 'bg-red-100', 'text-red-800');
+                resultDiv.classList.add(isSuccess ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800');
+                
+                // Atualizar exibição de cookies
+                displayCookies();
+            }
+            
+            // Limpar todos os cookies
+            document.getElementById('clear-cookies').addEventListener('click', function() {
+                try {
+                    const cookies = document.cookie.split(";");
+                    
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i];
+                        const eqPos = cookie.indexOf("=");
+                        const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
+                        document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+                    }
+                    
+                    showResult('✅ Todos os cookies foram removidos com sucesso!', true);
+                } catch (error) {
+                    showResult('❌ Erro ao remover cookies: ' + error.message, false);
+                }
+            });
+            
+            // Limpar apenas cookie de sessão
+            document.getElementById('clear-session').addEventListener('click', function() {
+                try {
+                    document.cookie = "session=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+                    showResult('✅ Cookie de sessão removido com sucesso!', true);
+                } catch (error) {
+                    showResult('❌ Erro ao remover cookie de sessão: ' + error.message, false);
+                }
+            });
+            
+            // Exibir cookies iniciais
+            displayCookies();
+        });
+    </script>
+</body>
+</html>
