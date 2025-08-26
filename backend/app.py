@@ -2,7 +2,7 @@ import os
 import sqlite3
 import unicodedata
 import re
-from flask import Flask, request, jsonify, session
+from flask import Flask, request, jsonify, session, send_from_directory
 from flask_cors import CORS
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -698,6 +698,18 @@ def get_available_songs_for_setlist(setlist_id):
     except sqlite3.Error as e:
         conn.close()
         return jsonify({"error": f"Erro no banco de dados: {e}"}), 500
+
+
+# Rotas para servir o frontend
+@app.route('/')
+def serve_frontend():
+    """Serve o arquivo index.html do frontend"""
+    return send_from_directory('../app', 'index.html')
+
+@app.route('/<path:path>')
+def serve_static(path):
+    """Serve arquivos estáticos do frontend"""
+    return send_from_directory('../app', path)
 
 
 init_db()

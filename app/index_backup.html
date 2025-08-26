@@ -513,7 +513,7 @@
     // --- CORE LOGIC ---
     const SHARP_SCALE = ['A', 'A#', 'B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#'];
     const FLAT_SCALE = ['A', 'Bb', 'B', 'C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab'];
-    const CHORD_REGEX_SOURCE = `[A-Ga-g]([#b])?(m|min|M|Maj|maj|aug|dim|sus|add)?([1-9][0-5]?)?(\\((#|b)?[1-9][0-3]?((,|,\\s)*(\\s|#|b)?[1-9][0-3]?)*\\))?(sus[24]?)?(/[1-9][0-9]?)?([/\\\\][A-Ga-g]([#b])?)?`;
+    const CHORD_REGEX_SOURCE = `[A-Ga-g]([#b])?(m|min|M|Maj|maj|aug|dim|sus|add|Δ|°|ø)?([1-9][0-5]?)?(\\((#|b)?[1-9][0-3]?((,|,\\s)*(\\s|#|b)?[1-9][0-3]?)*\\))?(sus[24]?)?([/\\\\][A-Ga-g]([#b])?)?`;
     const CHORD_REGEX_GLOBAL = new RegExp(`(${CHORD_REGEX_SOURCE}|[A-Ga-g]([#b])?[1-9][0-5]?|[A-Ga-g]([#b])?[1-9][0-5]?[Mm])`, 'g');
     function isChordToken(token) { 
         if (!token) return false; 
@@ -2104,4 +2104,3 @@
     </script>
 </body>
 </html>
-
