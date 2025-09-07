@@ -4,6 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ChordChart Pro v2.0</title>
+    
+    <!-- Favicon e ícones para dispositivos -->
+    <link rel="icon" href="/icons/favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" sizes="180x180" href="/icons/favicon.svg">
+    <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon.svg">
+    <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon.svg">
+    
+    <!-- Metadados para dispositivos móveis -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="ChordChart Pro">
+    <meta name="application-name" content="ChordChart Pro">
+    <meta name="theme-color" content="#1a56db">
+    <link rel="manifest" href="/manifest.json">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -191,6 +206,68 @@
             overflow-y: auto !important;
             background-color: white;
             padding: 2rem; /* Adiciona um respiro dentro da tela cheia */
+            position: relative; /* Para posicionar controles absolutos */
+        }
+        
+        /* Controles de rolagem em tela cheia */
+        #fullscreen-scroll-controls {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 8px;
+            padding: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            transition: opacity 0.3s ease;
+        }
+        
+        #view-wrapper:fullscreen #fullscreen-scroll-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        #fullscreen-scroll-controls:hover {
+            opacity: 1;
+        }
+        
+        #fullscreen-scroll-controls.minimized {
+            opacity: 0.4;
+        }
+        
+        #fullscreen-scroll-controls button {
+            padding: 8px 12px;
+            border-radius: 4px;
+            border: none;
+            background-color: #3b82f6;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        
+        #fullscreen-scroll-controls button:hover {
+            background-color: #2563eb;
+        }
+        
+        #fullscreen-scroll-speed {
+            width: 100%;
+            margin: 8px 0;
+        }
+        
+        #fullscreen-scroll-toggle-minimize {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: none !important;
+            color: #6b7280 !important;
+            padding: 2px !important;
+            font-size: 12px !important;
         }
 
         @media print { 
@@ -393,6 +470,20 @@
                 <div id="outputArea" class="output-container"></div>
                 <div id="summaryArea" class="mt-8"></div>
                 <div id="uniqueChordsArea" class="mt-8"></div>
+                
+                <!-- Controles de rolagem para tela cheia -->
+                <div id="fullscreen-scroll-controls">
+                    <button id="fullscreen-minimize-btn" title="Minimizar controles">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                    <button id="fullscreen-scroll-toggle" title="Iniciar/Parar rolagem">
+                        <i class="fas fa-play"></i>
+                    </button>
+                    <div class="slider-container">
+                        <input type="range" id="fullscreen-scroll-speed" min="0.5" max="3" step="0.1" value="1" title="Velocidade de rolagem">
+                        <span id="fullscreen-speed-display">1x</span>
+                    </div>
+                </div>
             </div>
         </main>
 
@@ -406,9 +497,94 @@
         #uniqueChordsArea:empty ~ #outputArea {
             max-height: 80vh !important;
         }
+        /* Controles de rolagem em tela cheia minimizados */
+        #fullscreen-scroll-controls.minimized {
+            width: auto;
+            height: auto;
+            padding: 0;
+        }
+        #fullscreen-scroll-controls.minimized button:not(#fullscreen-minimize-btn),
+        #fullscreen-scroll-controls.minimized .slider-container {
+            display: none;
+        }
+        #fullscreen-scroll-controls.minimized #fullscreen-minimize-btn {
+            margin: 0;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+        }
+        #fullscreen-scroll-controls.minimized #fullscreen-minimize-btn i {
+            transform: rotate(180deg);
+        }
         /* Quando no modo chart, o outputArea deve ocupar mais espaço */
         body:not([data-view="map"]) #outputArea {
             max-height: 80vh !important;
+        }
+        
+        /* Estilos para o controle de rolagem em tela cheia */
+        #view-wrapper:fullscreen {
+            position: relative;
+        }
+        
+        #fullscreen-scroll-controls {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: 30px;
+            padding: 10px 20px;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        #view-wrapper:fullscreen #fullscreen-scroll-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        #fullscreen-scroll-controls:hover {
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+        
+        #fullscreen-scroll-controls button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s;
+        }
+        
+        #fullscreen-scroll-controls button:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        #fullscreen-scroll-controls .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        #fullscreen-scroll-speed {
+            width: 120px;
+            accent-color: #3b82f6;
+        }
+        
+        #fullscreen-speed-display {
+            color: white;
+            font-size: 14px;
+            min-width: 30px;
+            text-align: center;
         }
     </style>
     </div>
@@ -490,7 +666,11 @@
         scrollInterval: null,
         currentSongData: null,
         currentScrollStep: 2,
-        currentSongId: null
+        currentSongId: null,
+        isFullscreenScrolling: false,
+        fullscreenScrollInterval: null,
+        fullscreenScrollStep: 0.5,
+        fullscreenScrollAccumulator: 0
     };
     const dom = { 
         songInput: document.getElementById('songInput'), generateButton: document.getElementById('generateButton'), saveButton: document.getElementById('saveButton'), saveAsButton: document.getElementById('saveAsButton'), clearButton: document.getElementById('clearButton'), outputArea: document.getElementById('outputArea'), summaryArea: document.getElementById('summaryArea'), uniqueChordsArea: document.getElementById('uniqueChordsArea'),
@@ -507,7 +687,12 @@
         setlistSelect: document.getElementById('setlist-select'),
         addSongsToSetlistModal: document.getElementById('add-songs-to-setlist-modal'),
         availableSongsList: document.getElementById('available-songs-list'),
-        scrollToggle: document.getElementById('scroll-toggle'), scrollStatus: document.getElementById('scroll-status'), scrollSpeed: document.getElementById('scroll-speed'), speedDisplay: document.getElementById('speed-display'), manualSpeed: document.getElementById('manual-speed')
+        scrollToggle: document.getElementById('scroll-toggle'), scrollStatus: document.getElementById('scroll-status'), scrollSpeed: document.getElementById('scroll-speed'), speedDisplay: document.getElementById('speed-display'), manualSpeed: document.getElementById('manual-speed'),
+        fullscreenScrollControls: document.getElementById('fullscreen-scroll-controls'),
+        fullscreenScrollToggle: document.getElementById('fullscreen-scroll-toggle'),
+        fullscreenScrollSpeed: document.getElementById('fullscreen-scroll-speed'),
+        fullscreenSpeedDisplay: document.getElementById('fullscreen-speed-display'),
+        fullscreenMinimizeBtn: document.getElementById('fullscreen-minimize-btn')
     };
 
     // --- CORE LOGIC ---
@@ -1641,6 +1826,94 @@
             dom.fullscreenBtn.setAttribute('title', 'Tela Cheia');
         }
     }
+    
+    // Funções para controle de rolagem em tela cheia
+    function toggleFullscreenScroll() {
+        if (state.isFullscreenScrolling) {
+            stopFullscreenScroll();
+        } else {
+            startFullscreenScroll();
+        }
+    }
+    
+    function startFullscreenScroll() {
+        const speedMultiplier = parseFloat(dom.fullscreenScrollSpeed.value) || 1;
+        
+        // Verificar se há conteúdo para rolar
+        const outputArea = dom.outputArea;
+        
+        // Verificar se o outputArea tem conteúdo suficiente para rolar
+        if (outputArea.scrollHeight <= outputArea.clientHeight) {
+            alert('Não há conteúdo suficiente para rolar. Gere uma cifra primeiro.');
+            return;
+        }
+        
+        let scrollInterval = 100; // Intervalo de 100ms para rolagem mais controlada
+        let scrollStep = 0.5 * speedMultiplier; // Baseado na velocidade
+
+        // Garantir que o passo seja pelo menos 0.01 pixel para permitir rolagem muito lenta
+        scrollStep = Math.max(scrollStep, 0.01);
+        state.fullscreenScrollStep = scrollStep;
+        state.fullscreenScrollAccumulator = 0; // Acumulador para a rolagem
+
+        state.isFullscreenScrolling = true;
+        state.fullscreenScrollInterval = setInterval(() => {
+            const maxScrollTop = outputArea.scrollHeight - outputArea.clientHeight;
+            
+            // Adiciona o passo de rolagem ao acumulador
+            state.fullscreenScrollAccumulator += state.fullscreenScrollStep;
+            
+            // Calcula a quantidade de pixels a rolar
+            const scrollAmount = Math.floor(state.fullscreenScrollAccumulator);
+
+            if (scrollAmount > 0) {
+                outputArea.scrollTop += scrollAmount;
+                state.fullscreenScrollAccumulator -= scrollAmount; // Mantém a parte fracionária
+            }
+            
+            // Para quando chegar ao final
+            if (outputArea.scrollTop >= maxScrollTop) {
+                outputArea.scrollTop = maxScrollTop; // Garante que não ultrapasse o limite
+                stopFullscreenScroll();
+            }
+        }, scrollInterval);
+
+        const icon = dom.fullscreenScrollToggle.querySelector('i');
+        icon.className = 'fas fa-pause';
+        dom.fullscreenScrollToggle.setAttribute('title', 'Parar rolagem');
+    }
+    
+    function stopFullscreenScroll() {
+        if (state.fullscreenScrollInterval) {
+            clearInterval(state.fullscreenScrollInterval);
+            state.fullscreenScrollInterval = null;
+        }
+        state.isFullscreenScrolling = false;
+        
+        const icon = dom.fullscreenScrollToggle.querySelector('i');
+        icon.className = 'fas fa-play';
+        dom.fullscreenScrollToggle.setAttribute('title', 'Iniciar rolagem');
+    }
+    
+    function updateFullscreenSpeedDisplay() {
+        const speed = parseFloat(dom.fullscreenScrollSpeed.value);
+        dom.fullscreenSpeedDisplay.textContent = speed + 'x';
+        
+        // Se estiver rolando, atualiza a velocidade em tempo real
+        if (state.isFullscreenScrolling && state.fullscreenScrollInterval) {
+            updateFullscreenScrollSpeed();
+        }
+    }
+    
+    function updateFullscreenScrollSpeed() {
+        if (!state.isFullscreenScrolling || !state.fullscreenScrollInterval) return;
+        
+        const speedMultiplier = parseFloat(dom.fullscreenScrollSpeed.value) || 1;
+        let newScrollStep = 0.5 * speedMultiplier;
+        
+        // Atualiza o passo de rolagem, garantindo um mínimo de 0.01 pixel
+        state.fullscreenScrollStep = Math.max(newScrollStep, 0.01);
+    }
 
     // --- SCROLL FUNCTIONS ---
     function toggleScroll() {
@@ -1950,6 +2223,13 @@
             updateSpeedDisplay();
         });
         
+        // Fullscreen scroll controls
+        dom.fullscreenScrollToggle.addEventListener('click', toggleFullscreenScroll);
+        dom.fullscreenScrollSpeed.addEventListener('input', updateFullscreenSpeedDisplay);
+        dom.fullscreenMinimizeBtn.addEventListener('click', () => {
+            dom.fullscreenScrollControls.classList.toggle('minimized');
+        });
+        
         // Event listeners para detectar mudanças no estado de tela cheia
         document.addEventListener('fullscreenchange', updateFullscreenIcon);
         document.addEventListener('webkitfullscreenchange', updateFullscreenIcon);
@@ -2104,4 +2384,3 @@
     </script>
 </body>
 </html>
-

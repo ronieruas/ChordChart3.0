@@ -1,0 +1,23 @@
+{
+  "name": "ChordChart Pro",
+  "short_name": "ChordChart",
+  "description": "Aplicativo para gerenciamento de cifras e setlists musicais",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1a56db",
+  "icons": [
+    {
+      "src": "/icons/favicon.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/favicon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
