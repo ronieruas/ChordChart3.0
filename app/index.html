@@ -2286,7 +2286,7 @@
         
         // Inicializar menu responsivo
         function initResponsiveMenu() {
-            const menuToggle = document.querySelector('.mobile-menu-toggle');
+            const menuToggle = document.getElementById('mobile-menu-toggle');
             const sidebar = document.querySelector('aside');
             const overlay = document.getElementById('sidebar-overlay');
             
@@ -2313,10 +2313,20 @@
             
             if (sidebar && overlay) {
                 state.isMobileMenuOpen = !state.isMobileMenuOpen;
-                sidebar.classList.toggle('translate-x-0');
-                overlay.classList.toggle('hidden');
-                overlay.classList.toggle('opacity-0');
-                overlay.classList.toggle('opacity-50');
+                
+                if (state.isMobileMenuOpen) {
+                    sidebar.classList.remove('-translate-x-full');
+                    sidebar.classList.add('translate-x-0');
+                    overlay.classList.remove('hidden');
+                    overlay.classList.add('opacity-50');
+                    overlay.classList.remove('opacity-0');
+                } else {
+                    sidebar.classList.add('-translate-x-full');
+                    sidebar.classList.remove('translate-x-0');
+                    overlay.classList.add('hidden');
+                    overlay.classList.remove('opacity-50');
+                    overlay.classList.add('opacity-0');
+                }
                 
                 // Prevenir scroll do body quando menu está aberto
                 document.body.style.overflow = state.isMobileMenuOpen ? 'hidden' : '';
