@@ -666,6 +666,22 @@
             min-width: 32px;
             text-align: center;
         }
+        
+        /* Ajustes responsivos para controles de tela cheia */
+        @media (min-width: 768px) and (max-width: 1024px) {
+            /* Tablet - aumentar largura da barra de velocidade em 20% */
+            #fullscreen-scroll-speed {
+                width: 144px; /* 120px + 20% */
+            }
+        }
+        
+        @media (max-width: 767px) {
+            /* Celular - quadro mais largo e menos alto */
+            #fullscreen-scroll-controls {
+                padding: 2px 12px; /* Reduzir altura, aumentar largura */
+                min-width: 280px; /* Largura mínima maior */
+            }
+        }
     </style>
     </div>
 
