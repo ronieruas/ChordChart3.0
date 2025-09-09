@@ -2294,10 +2294,15 @@
                 menuToggle.addEventListener('click', toggleMobileMenu);
                 overlay.addEventListener('click', toggleMobileMenu);
                 
-                // Fechar menu ao clicar em links dentro dele
+                // Fechar menu ao clicar em links dentro dele (exceto botões de transposição)
                 const sidebarLinks = sidebar.querySelectorAll('button, input[type="range"], .color-picker');
                 sidebarLinks.forEach(link => {
                     link.addEventListener('click', () => {
+                        // Não fechar o menu se for um botão de transposição
+                        if (link.id === 'transpose-up' || link.id === 'transpose-down') {
+                            return;
+                        }
+                        
                         if (window.innerWidth < 1024 && state.isMobileMenuOpen) {
                             toggleMobileMenu();
                         }

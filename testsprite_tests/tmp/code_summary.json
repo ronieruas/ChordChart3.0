@@ -1,0 +1,142 @@
+{
+  "project_name": "ChordChart Pro v3.0",
+  "description": "Aplicação web avançada para criação e gerenciamento de cifras musicais com sistema de login seguro e funcionalidades de setlist",
+  "tech_stack": {
+    "frontend": {
+      "languages": ["HTML5", "CSS3", "JavaScript"],
+      "frameworks": ["Tailwind CSS"],
+      "features": ["PWA", "Responsive Design", "Mobile-First", "Touch Gestures"]
+    },
+    "backend": {
+      "language": "Python",
+      "framework": "Flask",
+      "database": "SQLite",
+      "libraries": ["Flask-Login", "Flask-CORS", "Werkzeug"]
+    },
+    "infrastructure": {
+      "containerization": "Docker",
+      "orchestration": "Docker Compose",
+      "web_server": "Nginx",
+      "deployment": "LXC Proxmox + Cloudflare Tunnel"
+    }
+  },
+  "main_features": [
+    {
+      "name": "Sistema de Autenticação",
+      "description": "Login seguro com usuário e senha, gerenciamento de sessão, proteção contra ataques de força bruta",
+      "endpoints": ["/api/login", "/api/logout", "/api/check_auth"]
+    },
+    {
+      "name": "Gerador de Cifras",
+      "description": "Entrada de texto para letras e acordes, processamento automático, geração de saída formatada",
+      "endpoints": ["/api/songs"]
+    },
+    {
+      "name": "Transposição de Acordes",
+      "description": "Transposição automática para diferentes tons, preservação da formatação, suporte a acordes complexos",
+      "frontend_feature": true
+    },
+    {
+      "name": "Sistema de Capo",
+      "description": "Simulação de capo em diferentes casas, ajuste automático dos acordes",
+      "frontend_feature": true
+    },
+    {
+      "name": "Gerenciamento de Setlists",
+      "description": "Criação, edição e organização de setlists musicais",
+      "endpoints": ["/api/setlists", "/api/setlists/<id>/songs"]
+    },
+    {
+      "name": "Visualização Responsiva",
+      "description": "Modo desktop, tablet e mobile, menu hambúrguer, gestos touch, modo tela cheia",
+      "frontend_feature": true
+    },
+    {
+      "name": "Gerenciamento de Usuários",
+      "description": "Criação, edição e exclusão de usuários (admin), alteração de senhas",
+      "endpoints": ["/api/users"]
+    }
+  ],
+  "security_features": [
+    "Rate limiting para login",
+    "Hashing seguro de senhas (Werkzeug)",
+    "Proteção CSRF",
+    "Headers de segurança",
+    "Validação de entrada",
+    "Sessões seguras",
+    "CORS configurado"
+  ],
+  "database_schema": {
+    "tables": [
+      {
+        "name": "users",
+        "columns": ["id", "username", "password_hash"]
+      },
+      {
+        "name": "songs",
+        "columns": ["id", "title", "content", "original_key", "user_id", "is_public", "capo_position", "duration", "bpm", "created_at"]
+      },
+      {
+        "name": "setlists",
+        "columns": ["id", "name", "user_id", "is_public", "created_at"]
+      },
+      {
+        "name": "setlist_songs",
+        "columns": ["id", "setlist_id", "song_id", "position"]
+      }
+    ]
+  },
+  "api_endpoints": {
+    "authentication": [
+      "POST /api/login",
+      "POST /api/logout",
+      "GET /api/check_auth"
+    ],
+    "users": [
+      "POST /api/users",
+      "GET /api/users",
+      "DELETE /api/users/<id>",
+      "POST /api/users/change_password"
+    ],
+    "songs": [
+      "GET /api/songs",
+      "POST /api/songs",
+      "GET /api/songs/<id>",
+      "PUT /api/songs/<id>",
+      "DELETE /api/songs/<id>"
+    ],
+    "setlists": [
+      "GET /api/setlists",
+      "POST /api/setlists",
+      "GET /api/setlists/<id>",
+      "DELETE /api/setlists/<id>",
+      "POST /api/setlists/<id>/songs",
+      "DELETE /api/setlists/<id>/songs/<song_id>",
+      "PUT /api/setlists/<id>/songs/order",
+      "PUT /api/setlists/<id>/visibility",
+      "GET /api/setlists/<id>/available-songs"
+    ]
+  },
+  "deployment_info": {
+    "frontend_url": "http://localhost:3000",
+    "backend_url": "http://localhost:5000",
+    "production_port": "8080",
+    "docker_services": ["backend", "frontend"],
+    "environment_files": [".env", "env.example", "env.production"]
+  },
+  "test_credentials": {
+    "username": "testuser",
+    "password": "Oxm!kyIo0oh2"
+  },
+  "file_structure": {
+    "root_files": ["docker-compose.yml", "nginx.conf", "README.md", "PRD-ChordChart.md"],
+    "app_directory": ["index.html", "manifest.json"],
+    "backend_directory": ["app.py", "requirements.txt", "Dockerfile", "create_user.py"]
+  },
+  "quality_assurance": {
+    "documentation": "Completa com PRD, README e guias de deploy",
+    "security_check": "Script security_check.py disponível",
+    "user_management": "Scripts para criação e gerenciamento de usuários",
+    "production_ready": "Configurações específicas para produção com SSL e Cloudflare"
+  }
+}

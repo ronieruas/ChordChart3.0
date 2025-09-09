@@ -1,0 +1,18 @@
+{
+  "status": "commited",
+  "type": "frontend",
+  "scope": "codebase",
+  "localEndpoint": "http://localhost:3000",
+  "loginUser": "ronieruas",
+  "loginPassword": "Mi@1410",
+  "executionArgs": {
+    "projectName": "ChordChart",
+    "projectPath": "C:\\Gemini\\Cursor\\ChordChart",
+    "testIds": [],
+    "additionalInstruction": "Executar todos os testes do plano gerado para certificar o projeto ChordChart Pro com a porta corrigida para 3000",
+    "envs": {
+      "API_KEY": "sk-user-dZghMY7egQf1GSzGpRScnoFibTlw_z_b7my1ZauLG2BlcOzbvq3c6pr0pK63qfuOCeZbTtr42c1-ltZVwgjKj-L98HJcVEY9IPNCLZOn05PNYx1zcFOMkajDA5RfA2k-KLQ"
+    }
+  },
+  "proxy": "http://a8b14adf-3a2d-4f7d-99ba-756aceecf9f6:sDn8c7ah8iKchmznSwFJRIvflyvj264S@tun.testsprite.com:8080"
+}

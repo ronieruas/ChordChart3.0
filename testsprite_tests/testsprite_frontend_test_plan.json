@@ -1,0 +1,494 @@
+[
+  {
+    "id": "TC001",
+    "title": "Login success with valid credentials",
+    "description": "Verify that a user can successfully log in using valid username and password credentials.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the login page."
+      },
+      {
+        "type": "action",
+        "description": "Enter a valid username and password."
+      },
+      {
+        "type": "action",
+        "description": "Click the login button."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm that the login is successful and the user is redirected to the dashboard."
+      }
+    ]
+  },
+  {
+    "id": "TC002",
+    "title": "Login failure with invalid credentials",
+    "description": "Ensure that login fails when the username or password is incorrect and appropriate error messages are shown.",
+    "category": "error handling",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the login page."
+      },
+      {
+        "type": "action",
+        "description": "Enter an invalid username or password."
+      },
+      {
+        "type": "action",
+        "description": "Click the login button."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify that the user receives an error message indicating invalid credentials and no access is granted."
+      }
+    ]
+  },
+  {
+    "id": "TC003",
+    "title": "Login rate limiting and brute force protection",
+    "description": "Validate that repeated failed login attempts trigger rate limiting to prevent brute force attacks.",
+    "category": "security",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Attempt to login with invalid credentials repeatedly exceeding allowed attempts."
+      },
+      {
+        "type": "assertion",
+        "description": "Check that the system blocks further login attempts temporarily and shows a rate limit warning."
+      }
+    ]
+  },
+  {
+    "id": "TC004",
+    "title": "Logout functionality",
+    "description": "Verify that the user can log out successfully and the session is terminated.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login successfully to the application."
+      },
+      {
+        "type": "action",
+        "description": "Click the logout button."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm that the user is redirected to the login page and that the session is invalidated."
+      }
+    ]
+  },
+  {
+    "id": "TC005",
+    "title": "Create song with valid lyrics and chords input",
+    "description": "Test that a user can create a song by inputting valid lyrics and chords and that the output is formatted correctly.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login and navigate to the song creation interface."
+      },
+      {
+        "type": "action",
+        "description": "Input valid text containing lyrics with chord annotations."
+      },
+      {
+        "type": "action",
+        "description": "Submit the song for processing."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify that the generated chord chart output is aligned, legible, and correctly formatted."
+      }
+    ]
+  },
+  {
+    "id": "TC006",
+    "title": "Create song with edge case input (complex chords and large text)",
+    "description": "Ensure the system correctly processes and formats songs containing complex chord symbols and large volumes of lyrics.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Enter a song with complex chords such as sus4, augmented, diminished, and slash chords."
+      },
+      {
+        "type": "action",
+        "description": "Include a large amount of lyric text."
+      },
+      {
+        "type": "action",
+        "description": "Submit the song for generation."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm the chord chart is properly formatted and no truncation or misalignment occurs."
+      }
+    ]
+  },
+  {
+    "id": "TC007",
+    "title": "Transposition of chords upward by multiple semitones",
+    "description": "Verify that transposition mechanism correctly shifts all chords up by specified number of semitones preserving chord quality and formatting.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Open a created song with chords in original key."
+      },
+      {
+        "type": "action",
+        "description": "Transpose chords upward by 3 semitones."
+      },
+      {
+        "type": "assertion",
+        "description": "Check all chords have been shifted correctly and original formatting is preserved."
+      }
+    ]
+  },
+  {
+    "id": "TC008",
+    "title": "Transposition of chords downward including edge case with flats",
+    "description": "Test shifting chords down including those with flat accidentals ensuring chord correctness and format remain accurate.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Select a song containing chords with sharps and flats."
+      },
+      {
+        "type": "action",
+        "description": "Transpose chords down by 2 semitones."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify chords correctly reflect the downward transposition including proper handling of accidentals."
+      }
+    ]
+  },
+  {
+    "id": "TC009",
+    "title": "Capo simulation adjustment of chords",
+    "description": "Validate that selecting a capo position shifts the chord representation accordingly within the interface.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Open a song and set capo position to 5th fret."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify chords displayed are properly adjusted to simulate capo at that position."
+      }
+    ]
+  },
+  {
+    "id": "TC010",
+    "title": "Capo simulation edge case at position zero and maximum fret",
+    "description": "Ensure the capo system correctly handles edge cases such as no capo and highest supported fret without erroneous chord shifts.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Set capo position to zero and verify no chord transposition occurs."
+      },
+      {
+        "type": "action",
+        "description": "Set capo position to maximum supported fret (e.g. 12)."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm chords adjust correctly in both scenarios without format loss."
+      }
+    ]
+  },
+  {
+    "id": "TC011",
+    "title": "Create, edit, and delete setlists",
+    "description": "Verify full lifecycle management of setlists including creation, editing (name and songs), and deletion.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Create a new setlist with a unique name."
+      },
+      {
+        "type": "action",
+        "description": "Edit the setlist to change its name."
+      },
+      {
+        "type": "action",
+        "description": "Add multiple songs to the setlist."
+      },
+      {
+        "type": "action",
+        "description": "Remove a song from the setlist."
+      },
+      {
+        "type": "action",
+        "description": "Delete the setlist."
+      },
+      {
+        "type": "assertion",
+        "description": "Validate each operation updates the interface and database accordingly with correct feedback."
+      }
+    ]
+  },
+  {
+    "id": "TC012",
+    "title": "Setlist song ordering functionality",
+    "description": "Verify that songs within a setlist can be reordered and that the order persists upon saving and reloading.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Open an existing setlist with multiple songs."
+      },
+      {
+        "type": "action",
+        "description": "Change the order of songs using provided controls."
+      },
+      {
+        "type": "action",
+        "description": "Save the setlist."
+      },
+      {
+        "type": "assertion",
+        "description": "Refresh or reopen the setlist and confirm the new order is preserved."
+      }
+    ]
+  },
+  {
+    "id": "TC013",
+    "title": "Responsive layout adaptation for desktop, tablet, and mobile",
+    "description": "Test the application UI adjusts correctly and remains functional across various viewport sizes and device types.",
+    "category": "ui",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Open the application in desktop resolution."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the full layout with all menus and controls is visible and usable."
+      },
+      {
+        "type": "action",
+        "description": "Resize viewport to tablet dimensions or emulate a tablet device."
+      },
+      {
+        "type": "assertion",
+        "description": "Check layout adjusts, hamburger menu appears and touch gestures are active."
+      },
+      {
+        "type": "action",
+        "description": "Resize or emulate mobile device viewport."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm UI remains responsive, menus accessible, and gestures work appropriately."
+      }
+    ]
+  },
+  {
+    "id": "TC014",
+    "title": "Full screen mode functionality with scrolling controls",
+    "description": "Ensure that full screen mode activates correctly and scrolling controls for presentation function as expected.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Open a chord chart in presentation mode."
+      },
+      {
+        "type": "action",
+        "description": "Activate full screen mode."
+      },
+      {
+        "type": "assertion",
+        "description": "Validate full screen is engaged and chord chart is displayed without UI clutter."
+      },
+      {
+        "type": "action",
+        "description": "Use scrolling or navigation controls to move through the chord chart."
+      },
+      {
+        "type": "assertion",
+        "description": "Ensure smooth navigation and correct updates of displayed content."
+      }
+    ]
+  },
+  {
+    "id": "TC015",
+    "title": "Admin user creation, editing, deletion and password change",
+    "description": "Verify that administrators can manage user accounts including creating new users, editing details, deleting users, and changing passwords securely.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as an admin user."
+      },
+      {
+        "type": "action",
+        "description": "Create a new user with valid data."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm the new user appears in user list."
+      },
+      {
+        "type": "action",
+        "description": "Edit the newly created user's details."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify changes are saved successfully."
+      },
+      {
+        "type": "action",
+        "description": "Change the new user's password via the admin interface."
+      },
+      {
+        "type": "assertion",
+        "description": "Ensure the password update is successful and the user can log in with the new password."
+      },
+      {
+        "type": "action",
+        "description": "Delete the user."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm the user is removed from the list and cannot access the system."
+      }
+    ]
+  },
+  {
+    "id": "TC016",
+    "title": "Security validation: password hashing and CSRF protection",
+    "description": "Verify that passwords are stored hashed and that CSRF protection is active on all forms.",
+    "category": "security",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Inspect the backend storage for user passwords."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm password hashes are stored, and no plaintext passwords exist."
+      },
+      {
+        "type": "action",
+        "description": "Attempt common CSRF vectors on forms like login, song creation, and setlist modification."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify CSRF tokens are required and requests without valid tokens are rejected."
+      }
+    ]
+  },
+  {
+    "id": "TC017",
+    "title": "CORS configuration and secure headers validation",
+    "description": "Check that CORS policies are correctly set and security headers such as Content-Security-Policy and X-Frame-Options are present.",
+    "category": "security",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Make cross-origin requests and inspect response headers."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm CORS headers restrict requests properly and security headers are present in responses."
+      }
+    ]
+  },
+  {
+    "id": "TC018",
+    "title": "Offline capabilities and PWA functionality",
+    "description": "Verify key application features are accessible offline and that PWA manifests and service workers function correctly.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Load the application and then disconnect the network."
+      },
+      {
+        "type": "assertion",
+        "description": "Check the application remains usable for viewing and editing cached songs and setlists."
+      },
+      {
+        "type": "action",
+        "description": "Verify the PWA manifest is valid and that the app can be installed as a PWA."
+      }
+    ]
+  },
+  {
+    "id": "TC019",
+    "title": "Browser compatibility testing across Chrome, Firefox, Safari, Edge, iOS, and Android",
+    "description": "Ensure the application loads, displays, and functions correctly across modern browsers and operating systems including mobile platforms.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Open the application on latest versions of Chrome, Firefox, Safari, and Edge browsers."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify UI rendering, feature availability, and interactions work consistently without errors."
+      },
+      {
+        "type": "action",
+        "description": "Open the application on iOS and Android mobile devices."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm responsive design, touch gestures, and offline capabilities behave as expected."
+      }
+    ]
+  },
+  {
+    "id": "TC020",
+    "title": "Print functionality and print optimization",
+    "description": "Validate that users can print chord charts and setlists with output formatted suitably for paper, free of unnecessary UI elements.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Open a chord chart or setlist."
+      },
+      {
+        "type": "action",
+        "description": "Activate the print command from the interface."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm the printed output is clear, legible, properly formatted, and excludes navigation or other UI controls."
+      }
+    ]
+  }
+]
