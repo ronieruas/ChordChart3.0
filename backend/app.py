@@ -1192,7 +1192,7 @@ def serve_frontend():
     return send_from_directory('../app', 'index.html')
 
 @app.route('/api/save-visual-preferences', methods=['POST'])
-@token_required
+@login_required
 def save_visual_preferences():
     """Salva as preferências visuais do usuário"""
     try:
@@ -1250,7 +1250,7 @@ def save_visual_preferences():
         return jsonify({'error': 'Erro interno do servidor'}), 500
 
 @app.route('/api/get-visual-preferences', methods=['GET'])
-@token_required
+@login_required
 def get_visual_preferences():
     """Recupera as preferências visuais do usuário"""
     try:
