@@ -448,7 +448,7 @@
         </button>
 
         <aside id="sidebar" class="w-full lg:w-96 bg-white p-6 shadow-lg lg:h-screen lg:sticky lg:top-0 overflow-y-auto no-print fixed inset-y-0 left-0 z-40 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out lg:relative">
-            <div class="flex justify-between items-center"><h1 class="text-2xl font-bold text-blue-700">ChordChart Pro</h1><div class="flex items-center"><span id="welcome-user" class="text-sm text-gray-600 mr-2"></span><button id="manage-users-btn" class="p-1 text-gray-500 hover:text-blue-600 hidden" title="Gerenciar Usuários"><i class="fas fa-users-cog"></i></button><button id="change-password-btn" class="p-1 text-gray-500 hover:text-blue-600" title="Alterar Senha"><i class="fas fa-key"></i></button><button id="logout-btn" class="p-1 text-gray-500 hover:text-red-600" title="Sair"><i class="fas fa-sign-out-alt"></i></button></div></div>
+            <div class="flex justify-between items-center"><h1 class="text-2xl font-bold text-blue-700">ChordChart Pro</h1><div class="flex items-center"><span id="welcome-user" class="text-sm text-gray-600 mr-2"></span><button id="notifications-btn" class="p-1 text-gray-500 hover:text-blue-600 relative" title="Notificações de Convites"><i class="fas fa-bell"></i><span id="notifications-badge" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">0</span></button><button id="manage-users-btn" class="p-1 text-gray-500 hover:text-blue-600 hidden" title="Gerenciar Usuários"><i class="fas fa-users-cog"></i></button><button id="change-password-btn" class="p-1 text-gray-500 hover:text-blue-600" title="Alterar Senha"><i class="fas fa-key"></i></button><button id="logout-btn" class="p-1 text-gray-500 hover:text-red-600" title="Sair"><i class="fas fa-sign-out-alt"></i></button></div></div>
             <p class="text-sm text-gray-500 mb-4">Sua ferramenta de cifras avançada.</p>
             <div class="mb-4"><label for="songInput" class="block text-sm font-medium text-gray-700 mb-1">Cifra Atual:</label><textarea id="songInput" rows="8" class="w-full p-2 border border-gray-300 rounded-md shadow-sm text-sm" placeholder="[Intro]&#10;G D Em C&#10;..."></textarea>
                 <div class="flex gap-2 mt-2">
@@ -480,7 +480,7 @@
                 <div id="uniqueChordsArea" class="mt-8"></div>
                 
                 <!-- Controles de rolagem para tela cheia -->
-                <div id="fullscreen-scroll-controls">
+                <div id="fullscreen-scroll-controls" class="fullscreen-controls">
                     <button id="fullscreen-minimize-btn" title="Minimizar controles">
                         <i class="fas fa-minus"></i>
                     </button>
@@ -694,7 +694,7 @@
     <dialog id="songs-modal" class="p-6 rounded-lg shadow-xl border w-full max-w-lg"><div class="flex justify-between items-center mb-4"><h3 class="text-lg font-bold">Músicas Salvas</h3><button class="cancel-btn text-2xl font-light">&times;</button></div><div class="border-b border-gray-200 mb-2"><nav class="-mb-px flex gap-4" aria-label="Tabs"><button id="my-songs-tab" class="tab-btn active whitespace-nowrap border-b-2 py-2 px-1 text-sm font-medium">Minhas Músicas</button><button id="public-songs-tab" class="tab-btn whitespace-nowrap border-b-2 border-transparent py-2 px-1 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700">Todas as Músicas</button></nav></div><div id="modal-songs-list" class="bg-gray-50 p-2 rounded-md h-96 overflow-y-auto border"></div></dialog>
     <dialog id="user-management-modal" class="p-6 rounded-lg shadow-xl border w-full max-w-lg"><div class="flex justify-between items-center mb-4"><h3 class="text-lg font-bold">Gerenciar Usuários</h3><button id="open-create-user-modal-btn" class="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600">Criar Novo</button></div><div id="modal-users-list" class="bg-gray-50 p-2 rounded-md h-80 overflow-y-auto border"></div><div class="flex justify-end mt-4"><button type="button" class="cancel-btn py-2 px-4 bg-gray-200 rounded-md">Fechar</button></div></dialog>
     <dialog id="change-password-modal" class="p-6 rounded-lg shadow-xl border w-full max-w-md"><h3 class="text-lg font-bold mb-4">Alterar Senha</h3><form id="change-password-form"><div class="space-y-4"><div><label for="old-password" class="block text-sm mb-1">Senha Antiga:</label><div class="relative"><input type="password" id="old-password" class="w-full p-2 border rounded-md" required><button type="button" class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-400 hover:text-gray-600 toggle-password-btn"><i class="fas fa-eye"></i></button></div></div><div><label for="new-password" class="block text-sm mb-1">Nova Senha:</label><div class="relative"><input type="password" id="new-password" class="w-full p-2 border rounded-md" required><button type="button" class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-400 hover:text-gray-600 toggle-password-btn"><i class="fas fa-eye"></i></button></div></div></div><p id="change-password-feedback" class="text-sm mt-4 hidden"></p><div class="flex justify-end gap-4 mt-6"><button type="button" class="cancel-btn py-2 px-4 bg-gray-200 rounded-md">Cancelar</button><button type="submit" class="py-2 px-4 bg-blue-600 text-white rounded-md">Alterar Senha</button></div></form></dialog>
-    <dialog id="create-user-modal" class="p-6 rounded-lg shadow-xl border w-full max-w-md"><h3 class="text-lg font-bold mb-4">Criar Novo Usuário</h3><form id="create-user-form"><div class="space-y-4"><div><label for="new-username" class="block text-sm mb-1">Nome de Usuário:</label><input type="text" id="new-username" class="w-full p-2 border rounded-md" required></div><div><label for="create-user-password" class="block text-sm mb-1">Senha:</label><div class="relative"><input type="password" id="create-user-password" class="w-full p-2 border rounded-md" required><button type="button" class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-400 hover:text-gray-600 toggle-password-btn"><i class="fas fa-eye"></i></button></div></div></div><p id="create-user-feedback" class="text-sm mt-4 hidden"></p><div class="flex justify-end gap-4 mt-6"><button type="button" class="cancel-btn py-2 px-4 bg-gray-200 rounded-md">Cancelar</button><button type="submit" class="py-2 px-4 bg-blue-600 text-white rounded-md">Criar Usuário</button></div></form></dialog>
+    <dialog id="create-user-modal" class="p-6 rounded-lg shadow-xl border w-full max-w-md"><h3 class="text-lg font-bold mb-4">Criar Novo Usuário</h3><form id="create-user-form"><div class="space-y-4"><div><label for="new-username" class="block text-sm mb-1">Nome de Usuário:</label><input type="text" id="new-username" class="w-full p-2 border rounded-md" required></div><div><label for="new-user-email" class="block text-sm mb-1">Email:</label><input type="email" id="new-user-email" class="w-full p-2 border rounded-md" required></div><div><label for="create-user-password" class="block text-sm mb-1">Senha:</label><div class="relative"><input type="password" id="create-user-password" class="w-full p-2 border rounded-md" required><button type="button" class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-400 hover:text-gray-600 toggle-password-btn"><i class="fas fa-eye"></i></button></div></div></div><p id="create-user-feedback" class="text-sm mt-4 hidden"></p><div class="flex justify-end gap-4 mt-6"><button type="button" class="cancel-btn py-2 px-4 bg-gray-200 rounded-md">Cancelar</button><button type="submit" class="py-2 px-4 bg-blue-600 text-white rounded-md">Criar Usuário</button></div></form></dialog>
     <dialog id="setlists-modal" class="p-6 rounded-lg shadow-xl border w-full max-w-xl">
         <div class="flex justify-between items-center mb-4">
             <h3 id="setlists-modal-title" class="text-lg font-bold">Gerenciar Setlists</h3>
@@ -703,6 +703,7 @@
         <div id="setlists-view-container">
             <nav id="setlists-tabs-nav" class="-mb-px flex gap-4 border-b border-gray-200" aria-label="Tabs">
                 <button id="my-setlists-tab" class="tab-btn active whitespace-nowrap border-b-2 py-2 px-1 text-sm font-medium">Meus Setlists</button>
+                <button id="shared-setlists-tab" class="tab-btn whitespace-nowrap border-b-2 border-transparent py-2 px-1 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700">Compartilhados</button>
                 <button id="public-setlists-tab" class="tab-btn whitespace-nowrap border-b-2 border-transparent py-2 px-1 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700">Setlists Públicos</button>
             </nav>
         </div>
@@ -737,6 +738,55 @@
         </form>
     </dialog>
 
+    <!-- Modal para Convidar Amigo -->
+    <dialog id="invite-friend-modal" class="p-6 rounded-lg shadow-xl border w-full max-w-md">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-bold">Convidar Amigo</h3>
+            <button class="cancel-btn text-2xl font-light">&times;</button>
+        </div>
+        <form id="invite-friend-form">
+            <div class="space-y-4">
+                <div>
+                    <label for="friend-user-id" class="block text-sm mb-1">ID do Usuário:</label>
+                    <input type="text" id="friend-user-id" class="w-full p-2 border rounded-md" placeholder="Digite o ID do usuário" required>
+                </div>
+            </div>
+            <div class="flex justify-end gap-4 mt-6">
+                <button type="button" class="cancel-btn py-2 px-4 bg-gray-200 rounded-md">Cancelar</button>
+                <button type="submit" class="py-2 px-4 bg-blue-600 text-white rounded-md">Enviar Convite</button>
+            </div>
+            <p id="invite-feedback" class="text-sm mt-2 hidden"></p>
+        </form>
+    </dialog>
+
+    <!-- Modal para Notificações de Convites -->
+    <dialog id="invites-modal" class="p-6 rounded-lg shadow-xl border w-full max-w-lg">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-bold">Convites Pendentes</h3>
+            <button class="cancel-btn text-2xl font-light">&times;</button>
+        </div>
+        <div id="pending-invites-list" class="bg-gray-50 p-2 rounded-md h-60 overflow-y-auto border mb-4">
+            <p class="text-center text-gray-400 text-sm p-4">Carregando convites...</p>
+        </div>
+        <div class="flex justify-end">
+            <button type="button" class="cancel-btn py-2 px-4 bg-gray-200 rounded-md">Fechar</button>
+        </div>
+    </dialog>
+
+    <!-- Modal para Visualizar Convidados -->
+    <dialog id="view-invites-modal" class="p-6 rounded-lg shadow-xl border w-full max-w-lg">
+        <div class="flex justify-between items-center mb-4">
+            <h3 id="view-invites-title" class="text-lg font-bold">Convidados do Setlist</h3>
+            <button class="cancel-btn text-2xl font-light">&times;</button>
+        </div>
+        <div id="setlist-invites-list" class="bg-gray-50 p-2 rounded-md h-60 overflow-y-auto border mb-4">
+            <p class="text-center text-gray-400 text-sm p-4">Carregando convidados...</p>
+        </div>
+        <div class="flex justify-end">
+            <button type="button" class="cancel-btn py-2 px-4 bg-gray-200 rounded-md">Fechar</button>
+        </div>
+    </dialog>
+
     <dialog id="add-songs-to-setlist-modal" class="p-6 rounded-lg shadow-xl border w-full max-w-lg">
         <div class="flex justify-between items-center mb-4">
             <h3 class="text-lg font-bold">Adicionar Músicas ao Setlist</h3>
@@ -768,7 +818,13 @@
         fullscreenScrollStep: 0.5,
         fullscreenScrollAccumulator: 0,
         isMobileMenuOpen: false,
-        isLandscape: window.innerWidth > window.innerHeight
+        isLandscape: window.innerWidth > window.innerHeight,
+        jamSession: {
+            isActive: false,
+            currentSetlistId: null,
+            songs: [],
+            currentIndex: 0
+        }
     };
     const dom = { 
         songInput: document.getElementById('songInput'), generateButton: document.getElementById('generateButton'), saveButton: document.getElementById('saveButton'), saveAsButton: document.getElementById('saveAsButton'), clearButton: document.getElementById('clearButton'), outputArea: document.getElementById('outputArea'), summaryArea: document.getElementById('summaryArea'), uniqueChordsArea: document.getElementById('uniqueChordsArea'),
@@ -780,7 +836,11 @@
         openSongsBtn: document.getElementById('open-songs-btn'), songsModal: document.getElementById('songs-modal'), modalSongsList: document.getElementById('modal-songs-list'), mySongsTab: document.getElementById('my-songs-tab'), publicSongsTab: document.getElementById('public-songs-tab'), 
         manageUsersBtn: document.getElementById('manage-users-btn'), userManagementModal: document.getElementById('user-management-modal'), modalUsersList: document.getElementById('modal-users-list'), openCreateUserModalBtn: document.getElementById('open-create-user-modal-btn'), createUserModal: document.getElementById('create-user-modal'), createUserForm: document.getElementById('create-user-form'), createUserFeedback: document.getElementById('create-user-feedback'), 
         changePasswordBtn: document.getElementById('change-password-btn'), changePasswordModal: document.getElementById('change-password-modal'), changePasswordForm: document.getElementById('change-password-form'), changePasswordFeedback: document.getElementById('change-password-feedback'),
-        openSetlistsBtn: document.getElementById('open-setlists-btn'), setlistsModal: document.getElementById('setlists-modal'), setlistsModalTitle: document.getElementById('setlists-modal-title'), setlistsTabsNav: document.getElementById('setlists-tabs-nav'), modalSetlistsList: document.getElementById('modal-setlists-list'), mySetlistsTab: document.getElementById('my-setlists-tab'), publicSetlistsTab: document.getElementById('public-setlists-tab'), createSetlistForm: document.getElementById('create-setlist-form'), createSetlistFeedback: document.getElementById('create-setlist-feedback'), setlistsViewContainer: document.getElementById('setlists-view-container'),
+        openSetlistsBtn: document.getElementById('open-setlists-btn'), setlistsModal: document.getElementById('setlists-modal'), setlistsModalTitle: document.getElementById('setlists-modal-title'), setlistsTabsNav: document.getElementById('setlists-tabs-nav'), modalSetlistsList: document.getElementById('modal-setlists-list'), mySetlistsTab: document.getElementById('my-setlists-tab'), sharedSetlistsTab: document.getElementById('shared-setlists-tab'), publicSetlistsTab: document.getElementById('public-setlists-tab'), createSetlistForm: document.getElementById('create-setlist-form'), createSetlistFeedback: document.getElementById('create-setlist-feedback'), setlistsViewContainer: document.getElementById('setlists-view-container'),
+        notificationsBtn: document.getElementById('notifications-btn'), notificationsBadge: document.getElementById('notifications-badge'),
+         inviteFriendModal: document.getElementById('invite-friend-modal'), inviteFriendForm: document.getElementById('invite-friend-form'), friendUserIdInput: document.getElementById('friend-user-id'), inviteFeedback: document.getElementById('invite-feedback'),
+         invitesModal: document.getElementById('invites-modal'), pendingInvitesList: document.getElementById('pending-invites-list'),
+         viewInvitesModal: document.getElementById('view-invites-modal'), viewInvitesTitle: document.getElementById('view-invites-title'), setlistInvitesList: document.getElementById('setlist-invites-list'),
         addToSetlistModal: document.getElementById('add-to-setlist-modal'), 
         addToSetlistForm: document.getElementById('add-to-setlist-form'), 
         setlistSelect: document.getElementById('setlist-select'),
@@ -1053,9 +1113,10 @@
         event.preventDefault(); 
         dom.createUserFeedback.classList.add('hidden'); 
         const username = dom.createUserForm['new-username'].value; 
+        const email = dom.createUserForm['new-user-email'].value;
         const password = dom.createUserForm['create-user-password'].value;
         try { 
-            const data = await fetchApi('/api/users', { method: 'POST', body: { username, password } }); 
+            const data = await fetchApi('/api/users', { method: 'POST', body: { username, email, password } }); 
             dom.createUserFeedback.textContent = data.message; 
             dom.createUserFeedback.className = 'text-sm mt-4 text-green-600'; 
             dom.createUserForm.reset(); 
@@ -1068,7 +1129,7 @@
             dom.createUserFeedback.classList.remove('hidden'); 
         } 
     }
-    async function handleOpenUserManagement() { try { const users = await fetchApi('/api/users'); dom.modalUsersList.innerHTML = ''; if (!users || users.length === 0) return; users.forEach(user => { const li = document.createElement('li'); li.className = 'flex justify-between items-center p-2'; li.innerHTML = `<span class="text-sm">${user.username}</span>`; if (user.username !== 'admin') { li.innerHTML += `<button data-id="${user.id}" data-username="${user.username}" class="delete-user-btn text-red-500 hover:text-red-700 p-1" title="Deletar"><i class="fas fa-trash-alt fa-xs"></i></button>`; } dom.modalUsersList.appendChild(li); }); dom.userManagementModal.showModal(); } catch (error) { alert("Não foi possível carregar a lista de usuários."); } }
+    async function handleOpenUserManagement() { try { const users = await fetchApi('/api/users'); dom.modalUsersList.innerHTML = ''; if (!users || users.length === 0) return; users.forEach(user => { const li = document.createElement('li'); li.className = 'flex justify-between items-center p-2'; li.innerHTML = `<span class="text-sm">ID: ${user.id} - ${user.username}</span>`; if (user.username !== 'admin') { li.innerHTML += `<button data-id="${user.id}" data-username="${user.username}" class="delete-user-btn text-red-500 hover:text-red-700 p-1" title="Deletar"><i class="fas fa-trash-alt fa-xs"></i></button>`; } dom.modalUsersList.appendChild(li); }); dom.userManagementModal.showModal(); } catch (error) { alert("Não foi possível carregar a lista de usuários."); } }
     async function handleDeleteUserFromModal(e) { if (!e.target.closest('.delete-user-btn')) return; const btn = e.target.closest('.delete-user-btn'); const userId = btn.dataset.id; const username = btn.dataset.username; if (confirm(`Tem certeza que deseja deletar o usuário "${username}"?`)) { try { await fetchApi(`/api/users/${userId}`, { method: 'DELETE' }); handleOpenUserManagement(); } catch (error) { alert('Não foi possível deletar o usuário.'); } } }
     async function handleChangePassword(e) { e.preventDefault(); dom.changePasswordFeedback.classList.add('hidden'); const old_password = dom.changePasswordForm['old-password'].value; const new_password = dom.changePasswordForm['new-password'].value; try { const data = await fetchApi('/api/users/change_password', { method: 'POST', body: { old_password, new_password } }); dom.changePasswordFeedback.textContent = data.message; dom.changePasswordFeedback.className = 'text-sm mt-4 text-green-600'; dom.changePasswordForm.reset(); setTimeout(() => dom.changePasswordModal.close(), 1500); } catch (error) { dom.changePasswordFeedback.textContent = error.message; dom.changePasswordFeedback.className = 'text-sm mt-4 text-red-600'; } finally { dom.changePasswordFeedback.classList.remove('hidden'); } }
 
@@ -1145,10 +1206,18 @@
             dom.setlistsViewContainer.after(listContainer); 
             listContainer.before(backButton);
 
-            // Adicionar controles de visibilidade e adicionar músicas
-            if (data.is_owner) {
-                const controlsDiv = document.createElement('div');
-                controlsDiv.className = 'flex justify-between items-center p-3 bg-gray-50 border-b';
+            // Adicionar controles baseados nas permissões do usuário
+            const controlsDiv = document.createElement('div');
+            controlsDiv.className = 'flex justify-between items-center p-3 bg-gray-50 border-b';
+            
+            // Indicador de permissão para usuários com acesso somente leitura
+            if (!data.can_edit && data.has_permission) {
+                const permissionIndicator = document.createElement('div');
+                permissionIndicator.className = 'flex items-center gap-2 text-sm text-blue-600';
+                permissionIndicator.innerHTML = '<i class="fas fa-eye"></i> Acesso somente leitura';
+                controlsDiv.appendChild(permissionIndicator);
+                listContainer.appendChild(controlsDiv);
+            } else if (data.can_edit) {
                 
                 // Controle de visibilidade
                 const visibilityDiv = document.createElement('div');
@@ -1178,14 +1247,48 @@
                 
                 controlsDiv.appendChild(visibilityDiv);
                 
+                // Botões de ação
+                const actionsDiv = document.createElement('div');
+                actionsDiv.className = 'flex gap-2';
+                
                 // Botão para adicionar músicas
                 const addSongsBtn = document.createElement('button');
                 addSongsBtn.className = 'bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded text-sm';
                 addSongsBtn.textContent = 'Adicionar Músicas';
                 addSongsBtn.onclick = () => handleOpenAddSongsToSetlistModal(setlistId);
-                controlsDiv.appendChild(addSongsBtn);
+                actionsDiv.appendChild(addSongsBtn);
+                
+                // Botão Convidar Amigo
+                const inviteBtn = document.createElement('button');
+                inviteBtn.className = 'bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm';
+                inviteBtn.textContent = 'Convidar Amigo';
+                inviteBtn.onclick = () => handleInviteFriend(setlistId);
+                actionsDiv.appendChild(inviteBtn);
+                
+                // Botão Visualizar Convidados
+                const viewInvitesBtn = document.createElement('button');
+                viewInvitesBtn.className = 'bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm';
+                viewInvitesBtn.textContent = 'Ver Convidados';
+                viewInvitesBtn.onclick = () => handleViewSetlistInvites(setlistId, data.name);
+                actionsDiv.appendChild(viewInvitesBtn);
+                
+                controlsDiv.appendChild(actionsDiv);
                 
                 listContainer.appendChild(controlsDiv);
+            }
+            
+            // Botão Iniciar Jam Session (disponível para donos e convidados)
+            if (data.songs && data.songs.length > 0) {
+                const jamSessionDiv = document.createElement('div');
+                jamSessionDiv.className = 'p-3 bg-yellow-50 border-b';
+                
+                const jamSessionBtn = document.createElement('button');
+                jamSessionBtn.className = 'bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded text-sm font-medium w-full';
+                jamSessionBtn.innerHTML = '<i class="fas fa-play mr-2"></i>Iniciar Jam Session';
+                jamSessionBtn.onclick = () => handleStartJamSession(setlistId, data.songs);
+                jamSessionDiv.appendChild(jamSessionBtn);
+                
+                listContainer.appendChild(jamSessionDiv);
             }
 
             if (data.songs && data.songs.length > 0) {
@@ -1201,7 +1304,7 @@
                         dom.setlistsModal.close();
                     };
 
-                    if (data.is_owner) {
+                    if (data.can_edit) {
                         const handleIcon = document.createElement('i');
                         handleIcon.className = 'fas fa-grip-vertical text-gray-400 mr-3 handle';
                         titleContainer.appendChild(handleIcon);
@@ -1226,7 +1329,7 @@
                     }
                     songLi.appendChild(titleContainer);
 
-                    if (data.is_owner) {
+                    if (data.can_edit) {
                         const removeBtn = document.createElement('button');
                         removeBtn.className = 'remove-song-from-setlist-btn text-red-500 hover:text-red-700 p-1';
                         removeBtn.title = 'Remover do Setlist';
@@ -1244,7 +1347,7 @@
                 listContainer.appendChild(emptyMessage);
             }
 
-            if (data.is_owner) {
+            if (data.can_edit) {
                 new Sortable(listContainer, {
                     handle: '.handle',
                     animation: 150,
@@ -1302,6 +1405,13 @@
                 body: { song_id: songId }
             });
             dom.addToSetlistModal.close();
+            
+            // Se o setlist estiver sendo visualizado, recarregar para mostrar a música
+            const setlistTitle = dom.setlistsModalTitle.textContent;
+            if (setlistTitle && setlistTitle !== 'Setlists') {
+                await viewSetlist(setlistId);
+            }
+            
             alert('Música adicionada com sucesso!');
         } catch (error) {
             alert(`Erro: ${error.message}`);
@@ -1373,6 +1483,9 @@
                 dom.addSongsToSetlistModal.close();
             }
             
+            // Recarregar o setlist para mostrar a música adicionada imediatamente
+            await viewSetlist(setlistId);
+            
             alert(`Música "${songTitle}" adicionada com sucesso!`);
         } catch (error) {
             alert(`Erro ao adicionar música: ${error.message}`);
@@ -1397,6 +1510,9 @@
                 original_key: ''
             };
         }
+        
+        // Inicializar notificações após login
+        loadPendingInvites();
         
         handleGenerate();
     }
@@ -1923,6 +2039,11 @@
         } else {
             icon.className = 'fas fa-expand text-lg';
             dom.fullscreenBtn.setAttribute('title', 'Tela Cheia');
+            
+            // Encerrar jam session quando sair do modo tela cheia
+            if (state.jamSession.active) {
+                endJamSession();
+            }
         }
     }
     
@@ -2114,6 +2235,337 @@
         
         // Atualiza o passo de rolagem, garantindo um mínimo de 0.01 pixel
         state.currentScrollStep = Math.max(newScrollStep, 0.01);
+    }
+
+    // --- INVITE FUNCTIONS ---
+    function handleInviteFriend(setlistId) {
+        // Configurar o modal com o setlistId
+        dom.inviteFriendModal.dataset.setlistId = setlistId;
+        dom.inviteFeedback.classList.add('hidden');
+        dom.inviteFriendForm.reset();
+        dom.inviteFriendModal.showModal();
+    }
+    
+    async function handleInviteFriendSubmit(event) {
+        event.preventDefault();
+        dom.inviteFeedback.classList.add('hidden');
+        
+        const friendUserId = dom.friendUserIdInput.value.trim();
+        const setlistId = dom.inviteFriendModal.dataset.setlistId;
+        
+        if (!friendUserId) {
+            showInviteFeedback('Por favor, informe o ID do usuário.', 'error');
+            return;
+        }
+        
+        try {
+            await fetchApi(`/api/setlists/${setlistId}/invite`, {
+                method: 'POST',
+                body: { user_id: friendUserId }
+            });
+            
+            showInviteFeedback('Convite enviado com sucesso!', 'success');
+            dom.inviteFriendForm.reset();
+            setTimeout(() => dom.inviteFriendModal.close(), 2000);
+        } catch (error) {
+            showInviteFeedback(`Erro: ${error.message}`, 'error');
+        }
+    }
+    
+    function showInviteFeedback(message, type) {
+        dom.inviteFeedback.textContent = message;
+        dom.inviteFeedback.className = `text-sm mt-2 ${type === 'error' ? 'text-red-600' : 'text-green-600'}`;
+        dom.inviteFeedback.classList.remove('hidden');
+    }
+    
+    async function loadPendingInvites() {
+        try {
+            const invites = await fetchApi('/api/invites/pending');
+            dom.pendingInvitesList.innerHTML = '';
+            
+            if (!invites || invites.length === 0) {
+                dom.pendingInvitesList.innerHTML = '<p class="text-center text-gray-400 text-sm p-4">Nenhum convite pendente.</p>';
+                updateNotificationsBadge(0);
+                return;
+            }
+            
+            updateNotificationsBadge(invites.length);
+            
+            invites.forEach(invite => {
+                const li = document.createElement('li');
+                li.className = 'flex justify-between items-center p-3 border-b';
+                li.innerHTML = `
+                    <div>
+                        <p class="font-medium">${invite.setlist_name}</p>
+                        <p class="text-sm text-gray-600">de ${invite.owner_name}</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button class="accept-invite-btn bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700" data-id="${invite.id}">
+                            Aceitar
+                        </button>
+                        <button class="reject-invite-btn bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700" data-id="${invite.id}">
+                            Recusar
+                        </button>
+                    </div>
+                `;
+                dom.pendingInvitesList.appendChild(li);
+            });
+        } catch (error) {
+            dom.pendingInvitesList.innerHTML = '<p class="text-center text-red-500 text-sm p-4">Erro ao carregar convites.</p>';
+        }
+    }
+    
+    function updateNotificationsBadge(count) {
+        if (count > 0) {
+            dom.notificationsBadge.textContent = count;
+            dom.notificationsBadge.classList.remove('hidden');
+        } else {
+            dom.notificationsBadge.classList.add('hidden');
+        }
+    }
+    
+    async function handleInviteResponse(event) {
+        const acceptBtn = event.target.closest('.accept-invite-btn');
+        const rejectBtn = event.target.closest('.reject-invite-btn');
+        
+        if (!acceptBtn && !rejectBtn) return;
+        
+        const inviteId = (acceptBtn || rejectBtn).dataset.id;
+        const action = acceptBtn ? 'accept' : 'reject';
+        
+        try {
+            await fetchApi(`/api/invites/${inviteId}/${action}`, { method: 'POST' });
+            await loadPendingInvites();
+            
+            if (action === 'accept') {
+                alert('Convite aceito! O setlist foi adicionado aos seus setlists compartilhados.');
+                // Recarregar setlists compartilhados se a aba estiver ativa
+                if (dom.sharedSetlistsTab && dom.sharedSetlistsTab.classList.contains('active')) {
+                    loadSetlists('shared');
+                }
+            }
+        } catch (error) {
+            alert(`Erro ao ${action === 'accept' ? 'aceitar' : 'recusar'} convite: ${error.message}`);
+        }
+    }
+    
+    function handleViewSetlistInvites(setlistId, setlistName) {
+        dom.viewInvitesTitle.textContent = `Convidados - ${setlistName}`;
+        loadSetlistInvites(setlistId);
+        dom.viewInvitesModal.showModal();
+    }
+    
+    async function loadSetlistInvites(setlistId) {
+        try {
+            const invites = await fetchApi(`/api/setlists/${setlistId}/invites`);
+            dom.setlistInvitesList.innerHTML = '';
+            
+            if (!invites || invites.length === 0) {
+                dom.setlistInvitesList.innerHTML = '<p class="text-center text-gray-400 text-sm p-4">Nenhum convite enviado.</p>';
+                return;
+            }
+            
+            invites.forEach(invite => {
+                const li = document.createElement('li');
+                li.className = 'flex justify-between items-center p-2 border-b';
+                
+                const statusClass = invite.status === 'accepted' ? 'text-green-600' : 
+                                  invite.status === 'rejected' ? 'text-red-600' : 'text-yellow-600';
+                const statusText = invite.status === 'accepted' ? 'Aceito' : 
+                                 invite.status === 'rejected' ? 'Recusado' : 'Pendente';
+                
+                const userInfo = document.createElement('div');
+                userInfo.innerHTML = `
+                    <p class="font-medium">${invite.invited_user_name || 'Usuário ID: ' + invite.invited_user_id}</p>
+                    <p class="text-sm text-gray-600">ID: ${invite.invited_user_id}</p>
+                `;
+                
+                const rightSection = document.createElement('div');
+                rightSection.className = 'flex items-center gap-2';
+                
+                if (invite.status === 'accepted') {
+                    // Adicionar controle de permissão para usuários aceitos
+                    const permissionSelect = document.createElement('select');
+                    permissionSelect.className = 'text-xs border rounded px-2 py-1';
+                    permissionSelect.innerHTML = `
+                        <option value="view_only">Visualizar</option>
+                        <option value="edit">Editar</option>
+                    `;
+                    
+                    // Definir permissão atual do usuário
+                    permissionSelect.value = invite.permission_type || 'view_only';
+                    
+                    permissionSelect.onchange = async () => {
+                        try {
+                            await fetchApi(`/api/setlists/${setlistId}/permissions`, {
+                                method: 'PUT',
+                                body: {
+                                    user_id: invite.invited_user_id,
+                                    permission_type: permissionSelect.value
+                                }
+                            });
+                            
+                            const actionText = permissionSelect.value === 'edit' ? 'editar' : 'visualizar';
+                            alert(`Permissão atualizada! O usuário agora pode ${actionText} o setlist.`);
+                        } catch (error) {
+                            alert(`Erro ao atualizar permissão: ${error.message}`);
+                            // Reverter seleção em caso de erro
+                            permissionSelect.value = permissionSelect.value === 'edit' ? 'view_only' : 'edit';
+                        }
+                    };
+                    
+                    rightSection.appendChild(permissionSelect);
+                }
+                
+                const statusSpan = document.createElement('span');
+                statusSpan.className = `text-sm font-medium ${statusClass}`;
+                statusSpan.textContent = statusText;
+                rightSection.appendChild(statusSpan);
+                
+                li.appendChild(userInfo);
+                li.appendChild(rightSection);
+                dom.setlistInvitesList.appendChild(li);
+            });
+        } catch (error) {
+            dom.setlistInvitesList.innerHTML = '<p class="text-center text-red-500 text-sm p-4">Erro ao carregar convites.</p>';
+        }
+    }
+    
+    // --- JAM SESSION FUNCTIONS ---
+    function handleStartJamSession(setlistId, songs) {
+        startJamSession(setlistId);
+    }
+    
+    async function startJamSession(setlistId) {
+        try {
+            const jamData = await fetchApi(`/api/setlists/${setlistId}/jam-session`);
+            
+            if (!jamData.songs || jamData.songs.length === 0) {
+                alert('Este setlist está vazio. Adicione músicas antes de iniciar uma Jam Session.');
+                return;
+            }
+            
+            state.jamSession = {
+                active: true,
+                setlistId: setlistId,
+                songs: jamData.songs,
+                currentIndex: 0
+            };
+            
+            // Carregar primeira música
+            await handleLoadSong(jamData.songs[0].id);
+            
+            // Fechar modal de setlists
+            dom.setlistsModal.close();
+            
+            // Ativar modo tela cheia
+            toggleFullscreen();
+            
+            // Mostrar controles de navegação
+            showJamSessionControls();
+            
+        } catch (error) {
+            alert(`Erro ao iniciar Jam Session: ${error.message}`);
+        }
+    }
+    
+    function showJamSessionControls() {
+        // Adicionar botões de navegação aos controles de tela cheia
+        const fullscreenControls = document.querySelector('.fullscreen-controls');
+        if (!fullscreenControls) return;
+        
+        // Remover controles existentes se houver
+        const existingNav = fullscreenControls.querySelector('.jam-nav-controls');
+        if (existingNav) existingNav.remove();
+        
+        const navControls = document.createElement('div');
+        navControls.className = 'jam-nav-controls flex gap-2 ml-4';
+        navControls.innerHTML = `
+            <button id="jam-prev-btn" class="bg-gray-600 hover:bg-gray-700 text-white px-3 py-2 rounded" title="Música Anterior">
+                <i class="fas fa-backward"></i>
+            </button>
+            <button id="jam-next-btn" class="bg-gray-600 hover:bg-gray-700 text-white px-3 py-2 rounded" title="Próxima Música">
+                <i class="fas fa-forward"></i>
+            </button>
+            <button id="jam-invite-btn" class="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded" title="Convidar para Jam Session">
+                <i class="fas fa-user-plus"></i>
+            </button>
+            <span class="text-white text-sm self-center ml-2">
+                ${state.jamSession.currentIndex + 1} / ${state.jamSession.songs.length}
+            </span>
+        `;
+        
+        fullscreenControls.appendChild(navControls);
+        
+        // Adicionar event listeners
+        document.getElementById('jam-prev-btn').addEventListener('click', jamPreviousSong);
+        document.getElementById('jam-next-btn').addEventListener('click', jamNextSong);
+        document.getElementById('jam-invite-btn').addEventListener('click', () => handleInviteToJamSession());
+        
+        updateJamNavButtons();
+    }
+    
+    function updateJamNavButtons() {
+        const prevBtn = document.getElementById('jam-prev-btn');
+        const nextBtn = document.getElementById('jam-next-btn');
+        
+        if (prevBtn) {
+            prevBtn.disabled = state.jamSession.currentIndex === 0;
+            prevBtn.classList.toggle('opacity-50', prevBtn.disabled);
+        }
+        
+        if (nextBtn) {
+            nextBtn.disabled = state.jamSession.currentIndex === state.jamSession.songs.length - 1;
+            nextBtn.classList.toggle('opacity-50', nextBtn.disabled);
+        }
+        
+        // Atualizar contador
+        const counter = document.querySelector('.jam-nav-controls span');
+        if (counter) {
+            counter.textContent = `${state.jamSession.currentIndex + 1} / ${state.jamSession.songs.length}`;
+        }
+    }
+    
+    async function jamPreviousSong() {
+        if (!state.jamSession.active || state.jamSession.currentIndex === 0) return;
+        
+        state.jamSession.currentIndex--;
+        const song = state.jamSession.songs[state.jamSession.currentIndex];
+        await handleLoadSong(song.id);
+        updateJamNavButtons();
+    }
+    
+    async function jamNextSong() {
+        if (!state.jamSession.active || state.jamSession.currentIndex === state.jamSession.songs.length - 1) return;
+        
+        state.jamSession.currentIndex++;
+        const song = state.jamSession.songs[state.jamSession.currentIndex];
+        await handleLoadSong(song.id);
+        updateJamNavButtons();
+    }
+    
+    function handleInviteToJamSession() {
+        if (!state.jamSession.active) return;
+        
+        // Abrir modal de convite com o setlist da jam session
+        dom.inviteFriendModal.dataset.setlistId = state.jamSession.setlistId;
+        dom.inviteFriendModal.showModal();
+    }
+    
+    function endJamSession() {
+        state.jamSession = { active: false };
+        
+        // Remover controles de navegação
+        const navControls = document.querySelector('.jam-nav-controls');
+        if (navControls) navControls.remove();
+    }
+    
+    // --- NOTIFICATIONS MODAL FUNCTIONS ---
+    function handleInvitesModal() {
+        // Abrir modal de notificações/convites
+        console.log('Abrindo modal de convites');
+        loadPendingInvites();
+        dom.invitesModal.showModal();
     }
 
     function handleSaveAs() {
@@ -2602,14 +3054,63 @@
         // Setlists
         if(dom.openSetlistsBtn) dom.openSetlistsBtn.addEventListener('click', handleOpenSetlistsModal);
         if(dom.createSetlistForm) dom.createSetlistForm.addEventListener('submit', handleCreateSetlist);
-        if(dom.mySetlistsTab) dom.mySetlistsTab.addEventListener('click', () => { dom.mySetlistsTab.classList.add('active'); dom.publicSetlistsTab.classList.remove('active'); loadSetlists('my_setlists'); });
-        if(dom.publicSetlistsTab) dom.publicSetlistsTab.addEventListener('click', () => { dom.publicSetlistsTab.classList.add('active'); dom.mySetlistsTab.classList.remove('active'); loadSetlists('public'); });
+        if(dom.mySetlistsTab) dom.mySetlistsTab.addEventListener('click', () => { 
+            dom.mySetlistsTab.classList.add('active'); 
+            dom.sharedSetlistsTab.classList.remove('active'); 
+            dom.publicSetlistsTab.classList.remove('active'); 
+            loadSetlists('my_setlists'); 
+        });
+        if(dom.sharedSetlistsTab) dom.sharedSetlistsTab.addEventListener('click', () => { 
+            dom.sharedSetlistsTab.classList.add('active'); 
+            dom.mySetlistsTab.classList.remove('active'); 
+            dom.publicSetlistsTab.classList.remove('active'); 
+            loadSetlists('shared'); 
+        });
+        if(dom.publicSetlistsTab) dom.publicSetlistsTab.addEventListener('click', () => { 
+            dom.publicSetlistsTab.classList.add('active'); 
+            dom.mySetlistsTab.classList.remove('active'); 
+            dom.sharedSetlistsTab.classList.remove('active'); 
+            loadSetlists('public'); 
+        });
         if(dom.modalSetlistsList) dom.modalSetlistsList.addEventListener('click', handleSetlistsListClick);
         if(dom.addToSetlistForm) dom.addToSetlistForm.addEventListener('submit', handleAddToSetlistSubmit);
         if(dom.addSongsToSetlistModal) {
             const cancelBtns = dom.addSongsToSetlistModal.querySelectorAll('.cancel-btn');
             cancelBtns.forEach(btn => btn.addEventListener('click', () => dom.addSongsToSetlistModal.close()));
         }
+        
+        // Notifications and Invites
+        if(dom.notificationsBtn) dom.notificationsBtn.addEventListener('click', handleInvitesModal);
+        if(dom.pendingInvitesList) dom.pendingInvitesList.addEventListener('click', handleInviteResponse);
+        if(dom.inviteFriendForm) dom.inviteFriendForm.addEventListener('submit', handleInviteFriendSubmit);
+        if(dom.inviteFriendModal) {
+            const cancelBtns = dom.inviteFriendModal.querySelectorAll('.cancel-btn');
+            cancelBtns.forEach(btn => btn.addEventListener('click', () => dom.inviteFriendModal.close()));
+        }
+        if(dom.invitesModal) {
+            const cancelBtns = dom.invitesModal.querySelectorAll('.cancel-btn');
+            cancelBtns.forEach(btn => btn.addEventListener('click', () => dom.invitesModal.close()));
+        }
+        if(dom.viewInvitesModal) {
+            const cancelBtns = dom.viewInvitesModal.querySelectorAll('.cancel-btn');
+            cancelBtns.forEach(btn => btn.addEventListener('click', () => dom.viewInvitesModal.close()));
+        }
+        
+        // Setlist Actions (delegated event listeners)
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('.invite-friend-btn')) {
+                const setlistId = e.target.closest('.invite-friend-btn').dataset.setlistId;
+                handleInviteFriend(setlistId);
+            }
+            if (e.target.closest('.view-invites-btn')) {
+                const setlistId = e.target.closest('.view-invites-btn').dataset.setlistId;
+                handleViewInvites(setlistId);
+            }
+            if (e.target.closest('.start-jam-btn')) {
+                const setlistId = e.target.closest('.start-jam-btn').dataset.setlistId;
+                startJamSession(setlistId);
+            }
+        });
 
         // Password Visibility Toggle já está configurado acima
         // Removido event listener duplicado para evitar conflitos

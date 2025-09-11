@@ -2,6 +2,7 @@ import os
 import sqlite3
 import unicodedata
 import re
+import logging
 from flask import Flask, request, jsonify, session, send_from_directory
 from flask_cors import CORS
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
@@ -11,6 +12,17 @@ import time
 from collections import defaultdict
 
 app = Flask(__name__)
+
+# Configurar logging de segurança
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler('security.log'),
+        logging.StreamHandler()
+    ]
+)
+security_logger = logging.getLogger('security')
 
 # Configuração de segurança melhorada
 SECRET_KEY = os.environ.get('SECRET_KEY')
@@ -30,8 +42,11 @@ CORS(app, supports_credentials=True, origins=os.environ.get('ALLOWED_ORIGINS', '
 
 # Rate limiting simples
 login_attempts = defaultdict(list)
+invite_attempts = defaultdict(list)
 MAX_LOGIN_ATTEMPTS = 5
+MAX_INVITE_ATTEMPTS = 10  # Máximo 10 convites por IP por hora
 LOGIN_TIMEOUT = 300  # 5 minutos
+INVITE_TIMEOUT = 3600  # 1 hora
 
 def is_rate_limited(ip):
     """Verifica se o IP está limitado por tentativas de login"""
@@ -43,6 +58,17 @@ def is_rate_limited(ip):
 def add_login_attempt(ip):
     """Adiciona uma tentativa de login para o IP"""
     login_attempts[ip].append(time.time())
+
+def is_invite_rate_limited(ip):
+    """Verifica se o IP está limitado por tentativas de convite"""
+    now = time.time()
+    # Remove tentativas antigas
+    invite_attempts[ip] = [t for t in invite_attempts[ip] if now - t < INVITE_TIMEOUT]
+    return len(invite_attempts[ip]) >= MAX_INVITE_ATTEMPTS
+
+def add_invite_attempt(ip):
+    """Adiciona uma tentativa de convite para o IP"""
+    invite_attempts[ip].append(time.time())
 
 def validate_password(password):
     """Valida a força da senha"""
@@ -69,6 +95,7 @@ def add_security_headers(response):
     response.headers['X-Content-Type-Options'] = 'nosniff'
     response.headers['X-Frame-Options'] = 'DENY'
     response.headers['X-XSS-Protection'] = '1; mode=block'
+    response.headers['Content-Security-Policy'] = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'"
     if os.environ.get('FLASK_ENV') == 'production':
         response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
     return response
@@ -80,17 +107,24 @@ login_manager.init_app(app)
 DATABASE = 'songs.db'
 
 class User(UserMixin):
-    def __init__(self, id, username):
+    def __init__(self, id, username, name=None, email=None):
         self.id = id
         self.username = username
+        self.name = name
+        self.email = email
 
 @login_manager.user_loader
 def load_user(user_id):
     db = get_db()
-    user_data = db.execute("SELECT id, username FROM users WHERE id = ?", (user_id,)).fetchone()
+    user_data = db.execute("SELECT id, username, name, email FROM users WHERE id = ?", (user_id,)).fetchone()
     db.close()
     if user_data:
-        return User(id=user_data['id'], username=user_data['username'])
+        return User(
+            id=user_data['id'], 
+            username=user_data['username'],
+            name=user_data['name'],
+            email=user_data['email']
+        )
     return None
 
 def get_db():
@@ -106,7 +140,13 @@ def init_db():
         # Primeiro, criar as tabelas se não existirem
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS users (
-                id INTEGER PRIMARY KEY, username TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL
+                id INTEGER PRIMARY KEY, 
+                username TEXT UNIQUE NOT NULL, 
+                password_hash TEXT NOT NULL,
+                name TEXT,
+                email TEXT,
+                user_id TEXT UNIQUE,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )''')
             
         cursor.execute('''
@@ -135,9 +175,59 @@ def init_db():
                 FOREIGN KEY(setlist_id) REFERENCES setlists(id) ON DELETE CASCADE,
                 FOREIGN KEY(song_id) REFERENCES songs(id) ON DELETE CASCADE
             )''')
+            
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS setlist_invites (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                setlist_id INTEGER NOT NULL,
+                inviter_id INTEGER NOT NULL,
+                invited_user_id TEXT NOT NULL,
+                status TEXT NOT NULL DEFAULT 'pending',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                accepted_at TIMESTAMP,
+                FOREIGN KEY(setlist_id) REFERENCES setlists(id) ON DELETE CASCADE,
+                FOREIGN KEY(inviter_id) REFERENCES users(id) ON DELETE CASCADE,
+                UNIQUE(setlist_id, invited_user_id)
+            )''')
+            
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS setlist_permissions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                setlist_id INTEGER NOT NULL,
+                user_id INTEGER NOT NULL,
+                permission_type TEXT NOT NULL DEFAULT 'view_only',
+                granted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY(setlist_id) REFERENCES setlists(id) ON DELETE CASCADE,
+                FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
+                UNIQUE(setlist_id, user_id)
+            )''')
         
         # Depois, verificar se as colunas existem e adicionar se necessário
         try:
+            # Verificar e adicionar colunas na tabela users
+            cursor.execute("PRAGMA table_info(users)")
+            user_columns = [column['name'] for column in cursor.fetchall()]
+            if 'name' not in user_columns:
+                cursor.execute("ALTER TABLE users ADD COLUMN name TEXT")
+            if 'email' not in user_columns:
+                cursor.execute("ALTER TABLE users ADD COLUMN email TEXT")
+            if 'user_id' not in user_columns:
+                cursor.execute("ALTER TABLE users ADD COLUMN user_id TEXT UNIQUE")
+            if 'created_at' not in user_columns:
+                cursor.execute("ALTER TABLE users ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+                
+            # Gerar user_id para usuários existentes que não têm
+            cursor.execute("SELECT id FROM users WHERE user_id IS NULL")
+            users_without_id = cursor.fetchall()
+            for user in users_without_id:
+                import secrets
+                user_id = secrets.token_urlsafe(8)
+                # Garantir que o user_id é único
+                while cursor.execute("SELECT id FROM users WHERE user_id = ?", (user_id,)).fetchone():
+                    user_id = secrets.token_urlsafe(8)
+                cursor.execute("UPDATE users SET user_id = ? WHERE id = ?", (user_id, user['id']))
+            
+            # Verificar e adicionar colunas na tabela songs
             cursor.execute("PRAGMA table_info(songs)")
             columns = [column['name'] for column in cursor.fetchall()]
             if 'user_id' not in columns:
@@ -439,6 +529,16 @@ def get_setlists():
 
     if filter_type == 'public':
         setlists_from_db = db.execute('SELECT id, name FROM setlists WHERE is_public = 1 ORDER BY name COLLATE NOCASE ASC').fetchall()
+    elif filter_type == 'shared':
+        # Setlists compartilhados comigo
+        setlists_from_db = db.execute('''
+            SELECT DISTINCT s.id, s.name, u.username as owner_username
+            FROM setlists s
+            JOIN setlist_permissions sp ON s.id = sp.setlist_id
+            JOIN users u ON s.user_id = u.id
+            WHERE sp.user_id = ?
+            ORDER BY s.name COLLATE NOCASE ASC
+        ''', (current_user.id,)).fetchall()
     else: 
         setlists_from_db = db.execute('SELECT id, name FROM setlists WHERE user_id = ? ORDER BY name COLLATE NOCASE ASC', (current_user.id,)).fetchall()
     
@@ -460,7 +560,22 @@ def get_setlist_details(setlist_id):
         return jsonify({"error": "Setlist não encontrado."}), 404
 
     is_owner = setlist['user_id'] == current_user.id
-    if not is_owner and not setlist['is_public']:
+    has_permission = False
+    permission_type = None
+    
+    # Verificar se o usuário tem permissão através de convite aceito
+    if not is_owner:
+        permission = db.execute(
+            'SELECT permission_type FROM setlist_permissions WHERE setlist_id = ? AND user_id = ?',
+            (setlist_id, current_user.id)
+        ).fetchone()
+        
+        if permission:
+            has_permission = True
+            permission_type = permission['permission_type']
+    
+    # Verificar acesso: dono, público ou com permissão
+    if not is_owner and not setlist['is_public'] and not has_permission:
         db.close()
         return jsonify({"error": "Acesso não autorizado."}), 403
 
@@ -477,11 +592,19 @@ def get_setlist_details(setlist_id):
     
     db.close()
 
+    # Verificar se tem permissão de edição
+    can_edit = is_owner
+    if not is_owner and has_permission:
+        can_edit = permission_type == 'edit'
+    
     response_data = {
         "id": setlist['id'],
         "name": setlist['name'],
         "is_public": setlist['is_public'],
         "is_owner": is_owner,
+        "has_permission": has_permission,
+        "permission_type": permission_type,
+        "can_edit": can_edit,  # Dono ou usuário com permissão de edição
         "songs": [dict(song) for song in songs_in_setlist]
     }
     
@@ -588,7 +711,19 @@ def update_setlist_order(setlist_id):
     if not setlist:
         conn.close()
         return jsonify({"error": "Setlist não encontrado."}), 404
-    if setlist['user_id'] != current_user.id:
+    
+    # Verificar se é o dono ou tem permissão de edição
+    is_owner = setlist['user_id'] == current_user.id
+    has_edit_permission = False
+    
+    if not is_owner:
+        permission = conn.execute(
+            'SELECT permission_type FROM setlist_permissions WHERE setlist_id = ? AND user_id = ?',
+            (setlist_id, current_user.id)
+        ).fetchone()
+        has_edit_permission = permission and permission['permission_type'] == 'edit'
+    
+    if not is_owner and not has_edit_permission:
         conn.close()
         return jsonify({"error": "Acesso não autorizado para modificar este setlist."}), 403
 
@@ -699,6 +834,342 @@ def get_available_songs_for_setlist(setlist_id):
         conn.close()
         return jsonify({"error": f"Erro no banco de dados: {e}"}), 500
 
+# --- SETLIST INVITES API ROUTES ---
+@app.route('/api/setlists/<int:setlist_id>/invite', methods=['POST'])
+@login_required
+def invite_user_to_setlist(setlist_id):
+    """Convida um usuário para acessar um setlist."""
+    # Rate limiting para convites
+    client_ip = request.environ.get('HTTP_X_FORWARDED_FOR', request.remote_addr)
+    if is_invite_rate_limited(client_ip):
+        return jsonify({"error": "Muitos convites enviados. Tente novamente em 1 hora."}), 429
+    
+    data = request.get_json()
+    invited_user_id = data.get('user_id', '').strip()
+    
+    if not invited_user_id:
+        return jsonify({"error": "ID do usuário é obrigatório."}), 400
+    
+    conn = get_db()
+    
+    # Verificar se o setlist existe e se o usuário atual é o dono
+    setlist = conn.execute('SELECT user_id, name FROM setlists WHERE id = ?', (setlist_id,)).fetchone()
+    if not setlist:
+        conn.close()
+        return jsonify({"error": "Setlist não encontrado."}), 404
+    if setlist['user_id'] != current_user.id:
+        conn.close()
+        return jsonify({"error": "Apenas o dono do setlist pode enviar convites."}), 403
+    
+    # Verificar se o usuário convidado existe (buscar por username ou id)
+    invited_user = conn.execute('SELECT id FROM users WHERE username = ? OR id = ?', (invited_user_id, invited_user_id)).fetchone()
+    if not invited_user:
+        conn.close()
+        return jsonify({"error": "Usuário não encontrado."}), 404
+    
+    # Verificar se não está tentando convidar a si mesmo
+    if invited_user['id'] == current_user.id:
+        conn.close()
+        return jsonify({"error": "Você não pode convidar a si mesmo."}), 400
+    
+    try:
+        # Verificar se já existe um convite
+        existing_invite = conn.execute(
+            'SELECT status FROM setlist_invites WHERE setlist_id = ? AND invited_user_id = ?',
+            (setlist_id, invited_user['id'])
+        ).fetchone()
+        
+        if existing_invite:
+            if existing_invite['status'] == 'accepted':
+                conn.close()
+                return jsonify({"error": "Usuário já tem acesso a este setlist."}), 400
+            elif existing_invite['status'] == 'pending':
+                conn.close()
+                return jsonify({"error": "Convite já foi enviado para este usuário."}), 400
+        
+        # Criar o convite
+        conn.execute(
+            'INSERT INTO setlist_invites (setlist_id, inviter_id, invited_user_id) VALUES (?, ?, ?)',
+            (setlist_id, current_user.id, invited_user['id'])
+        )
+        
+        conn.commit()
+        conn.close()
+        
+        # Registrar tentativa de convite após sucesso
+        add_invite_attempt(client_ip)
+        
+        # Log de segurança
+        security_logger.info(f"INVITE_SENT: User {current_user.id} invited user {invited_user['id']} to setlist {setlist_id} from IP {client_ip}")
+        
+        return jsonify({"message": f"Convite enviado com sucesso para o usuário {invited_user_id}."})
+        
+    except sqlite3.Error as e:
+        conn.rollback()
+        conn.close()
+        return jsonify({"error": f"Erro no banco de dados: {e}"}), 500
+
+@app.route('/api/invites/pending', methods=['GET'])
+@login_required
+def get_pending_invites():
+    """Lista convites pendentes para o usuário atual."""
+    conn = get_db()
+    
+    try:
+        pending_invites = conn.execute('''
+            SELECT si.id, si.setlist_id, si.created_at, s.name as setlist_name, 
+                   u.username as inviter_username
+            FROM setlist_invites si
+            JOIN setlists s ON si.setlist_id = s.id
+            JOIN users u ON si.inviter_id = u.id
+            WHERE si.invited_user_id = ? AND si.status = 'pending'
+            ORDER BY si.created_at DESC
+        ''', (current_user.id,)).fetchall()
+        
+        conn.close()
+        return jsonify([dict(invite) for invite in pending_invites])
+        
+    except sqlite3.Error as e:
+        conn.close()
+        return jsonify({"error": f"Erro no banco de dados: {e}"}), 500
+
+@app.route('/api/invites/<int:invite_id>/accept', methods=['POST'])
+@login_required
+def accept_invite(invite_id):
+    """Aceita um convite para acessar um setlist."""
+    conn = get_db()
+    
+    try:
+        # Verificar se o convite existe e pertence ao usuário atual
+        invite = conn.execute(
+            'SELECT setlist_id, status FROM setlist_invites WHERE id = ? AND invited_user_id = ?',
+            (invite_id, current_user.id)
+        ).fetchone()
+        
+        if not invite:
+            conn.close()
+            return jsonify({"error": "Convite não encontrado."}), 404
+        
+        if invite['status'] != 'pending':
+            conn.close()
+            return jsonify({"error": "Convite já foi processado."}), 400
+        
+        # Aceitar o convite
+        conn.execute(
+            'UPDATE setlist_invites SET status = "accepted", accepted_at = CURRENT_TIMESTAMP WHERE id = ?',
+            (invite_id,)
+        )
+        
+        # Criar permissão de visualização
+        conn.execute(
+            'INSERT OR REPLACE INTO setlist_permissions (setlist_id, user_id, permission_type) VALUES (?, ?, "view_only")',
+            (invite['setlist_id'], current_user.id)
+        )
+        
+        conn.commit()
+        conn.close()
+        
+        # Log de segurança
+        client_ip = request.environ.get('HTTP_X_FORWARDED_FOR', request.remote_addr)
+        security_logger.info(f"INVITE_ACCEPTED: User {current_user.id} accepted invite {invite_id} from IP {client_ip}")
+        
+        return jsonify({"message": "Convite aceito com sucesso."})
+        
+    except sqlite3.Error as e:
+        conn.rollback()
+        conn.close()
+        return jsonify({"error": f"Erro no banco de dados: {e}"}), 500
+
+@app.route('/api/invites/<int:invite_id>/reject', methods=['POST'])
+@login_required
+def reject_invite(invite_id):
+    """Recusa um convite para acessar um setlist."""
+    conn = get_db()
+    
+    try:
+        # Verificar se o convite existe e pertence ao usuário atual
+        invite = conn.execute(
+            'SELECT setlist_id, status FROM setlist_invites WHERE id = ? AND invited_user_id = ?',
+            (invite_id, current_user.id)
+        ).fetchone()
+        
+        if not invite:
+            conn.close()
+            return jsonify({"error": "Convite não encontrado."}), 404
+        
+        if invite['status'] != 'pending':
+            conn.close()
+            return jsonify({"error": "Convite já foi processado."}), 400
+        
+        # Recusar o convite
+        conn.execute(
+            'UPDATE setlist_invites SET status = "rejected" WHERE id = ?',
+            (invite_id,)
+        )
+        
+        conn.commit()
+        conn.close()
+        
+        # Log de segurança
+        client_ip = request.environ.get('HTTP_X_FORWARDED_FOR', request.remote_addr)
+        security_logger.info(f"INVITE_REJECTED: User {current_user.id} rejected invite {invite_id} from IP {client_ip}")
+        
+        return jsonify({"message": "Convite recusado com sucesso."})
+        
+    except sqlite3.Error as e:
+        conn.rollback()
+        conn.close()
+        return jsonify({"error": f"Erro no banco de dados: {e}"}), 500
+
+@app.route('/api/setlists/<int:setlist_id>/permissions', methods=['PUT'])
+@login_required
+def update_setlist_permission(setlist_id):
+    """Atualiza a permissão de um usuário em um setlist (apenas para o dono)."""
+    data = request.get_json()
+    user_id = data.get('user_id')
+    permission_type = data.get('permission_type')
+    
+    if not user_id or not permission_type:
+        return jsonify({"error": "user_id e permission_type são obrigatórios."}), 400
+    
+    if permission_type not in ['view_only', 'edit']:
+        return jsonify({"error": "permission_type deve ser 'view_only' ou 'edit'."}), 400
+    
+    conn = get_db()
+    
+    # Verificar se o setlist existe e se o usuário atual é o dono
+    setlist = conn.execute('SELECT user_id FROM setlists WHERE id = ?', (setlist_id,)).fetchone()
+    if not setlist:
+        conn.close()
+        return jsonify({"error": "Setlist não encontrado."}), 404
+    if setlist['user_id'] != current_user.id:
+        conn.close()
+        return jsonify({"error": "Apenas o dono do setlist pode alterar permissões."}), 403
+    
+    # Verificar se o usuário tem permissão no setlist
+    existing_permission = conn.execute(
+        'SELECT id FROM setlist_permissions WHERE setlist_id = ? AND user_id = ?',
+        (setlist_id, user_id)
+    ).fetchone()
+    
+    if not existing_permission:
+        conn.close()
+        return jsonify({"error": "Usuário não tem acesso a este setlist."}), 404
+    
+    try:
+        # Atualizar a permissão
+        conn.execute(
+            'UPDATE setlist_permissions SET permission_type = ? WHERE setlist_id = ? AND user_id = ?',
+            (permission_type, setlist_id, user_id)
+        )
+        conn.commit()
+        conn.close()
+        
+        return jsonify({"message": f"Permissão atualizada para {permission_type} com sucesso."})
+        
+    except sqlite3.Error as e:
+        conn.rollback()
+        conn.close()
+        return jsonify({"error": f"Erro no banco de dados: {e}"}), 500
+
+@app.route('/api/setlists/<int:setlist_id>/invites', methods=['GET'])
+@login_required
+def get_setlist_invites(setlist_id):
+    """Lista convites de um setlist (apenas para o dono)."""
+    conn = get_db()
+    
+    # Verificar se o setlist existe e se o usuário atual é o dono
+    setlist = conn.execute('SELECT user_id FROM setlists WHERE id = ?', (setlist_id,)).fetchone()
+    if not setlist:
+        conn.close()
+        return jsonify({"error": "Setlist não encontrado."}), 404
+    if setlist['user_id'] != current_user.id:
+        conn.close()
+        return jsonify({"error": "Apenas o dono do setlist pode ver os convites."}), 403
+    
+    try:
+        invites = conn.execute('''
+            SELECT si.id, si.invited_user_id, si.status, si.created_at, si.accepted_at,
+                   u.username as invited_user_name,
+                   sp.permission_type
+            FROM setlist_invites si
+            LEFT JOIN users u ON si.invited_user_id = u.id
+            LEFT JOIN setlist_permissions sp ON si.setlist_id = sp.setlist_id AND si.invited_user_id = sp.user_id
+            WHERE si.setlist_id = ?
+            ORDER BY si.created_at DESC
+        ''', (setlist_id,)).fetchall()
+        
+        conn.close()
+        return jsonify([dict(invite) for invite in invites])
+        
+    except sqlite3.Error as e:
+        conn.close()
+        return jsonify({"error": f"Erro no banco de dados: {e}"}), 500
+
+@app.route('/api/user/profile', methods=['GET'])
+@login_required
+def get_user_profile():
+    """Retorna informações do perfil do usuário atual."""
+    return jsonify({
+        "id": current_user.id,
+        "username": current_user.username,
+        "name": current_user.name,
+        "email": current_user.email
+    })
+
+@app.route('/api/setlists/<int:setlist_id>/jam-session', methods=['GET'])
+@login_required
+def start_jam_session(setlist_id):
+    """Inicia uma jam session retornando as músicas do setlist em ordem."""
+    db = get_db()
+    
+    # Verificar se o usuário tem acesso ao setlist
+    setlist = db.execute(
+        'SELECT id, name, user_id, is_public FROM setlists WHERE id = ?',
+        (setlist_id,)
+    ).fetchone()
+
+    if not setlist:
+        db.close()
+        return jsonify({"error": "Setlist não encontrado."}), 404
+
+    is_owner = setlist['user_id'] == current_user.id
+    has_permission = False
+    
+    if not is_owner:
+        permission = db.execute(
+            'SELECT permission_type FROM setlist_permissions WHERE setlist_id = ? AND user_id = ?',
+            (setlist_id, current_user.id)
+        ).fetchone()
+        has_permission = permission is not None
+    
+    if not is_owner and not setlist['is_public'] and not has_permission:
+        db.close()
+        return jsonify({"error": "Acesso não autorizado."}), 403
+
+    # Buscar músicas do setlist em ordem
+    songs = db.execute(
+        '''
+        SELECT s.id, s.title, s.original_key, s.capo_position, s.duration, s.bpm, ss.position
+        FROM songs s
+        JOIN setlist_songs ss ON s.id = ss.song_id
+        WHERE ss.setlist_id = ?
+        ORDER BY ss.position ASC
+        ''',
+        (setlist_id,)
+    ).fetchall()
+    
+    db.close()
+
+    if not songs:
+        return jsonify({"error": "Setlist vazio."}), 400
+
+    return jsonify({
+        "setlist_id": setlist['id'],
+        "setlist_name": setlist['name'],
+        "total_songs": len(songs),
+        "songs": [dict(song) for song in songs]
+    })
 
 # Rotas para servir o frontend
 @app.route('/')
