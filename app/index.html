@@ -1196,6 +1196,10 @@
             dom.createSetlistForm.classList.add('hidden');
             dom.setlistsModalTitle.textContent = data.name;
 
+            // Remover botões "Voltar para a lista" existentes antes de criar um novo
+            const existingBackButtons = dom.setlistsModal.querySelectorAll('.back-to-setlist-list');
+            existingBackButtons.forEach(btn => btn.remove());
+
             const backButton = document.createElement('button');
             backButton.innerHTML = '&larr; Voltar para a lista';
             backButton.className = 'text-sm text-indigo-600 hover:underline mb-4 back-to-setlist-list';
@@ -1352,6 +1356,9 @@
                     handle: '.handle',
                     animation: 150,
                     ghostClass: 'sortable-ghost',
+                    touchStartThreshold: 5,
+                    delay: 100,
+                    delayOnTouchStart: true,
                     onEnd: async function (evt) {
                         const items = Array.from(listContainer.children);
                         const songIds = items.map(item => parseInt(item.dataset.songId)).filter(id => !isNaN(id));
@@ -1361,6 +1368,7 @@
                                 body: { song_ids: songIds }
                             });
                         } catch (error) {
+                            console.error('Erro ao salvar ordem:', error);
                             alert('Não foi possível salvar a nova ordem.');
                         }
                     }
