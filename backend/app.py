@@ -201,6 +201,20 @@ def init_db():
                 FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
                 UNIQUE(setlist_id, user_id)
             )''')
+            
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS visual_preferences (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                font_size TEXT NOT NULL DEFAULT 'medium',
+                two_column_layout BOOLEAN NOT NULL DEFAULT 0,
+                view_mode TEXT NOT NULL DEFAULT 'normal',
+                theme TEXT NOT NULL DEFAULT 'light',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
+                UNIQUE(user_id)
+            )''')
         
         # Depois, verificar se as colunas existem e adicionar se necessário
         try:
@@ -1176,6 +1190,101 @@ def start_jam_session(setlist_id):
 def serve_frontend():
     """Serve o arquivo index.html do frontend"""
     return send_from_directory('../app', 'index.html')
+
+@app.route('/api/save-visual-preferences', methods=['POST'])
+@token_required
+def save_visual_preferences():
+    """Salva as preferências visuais do usuário"""
+    try:
+        data = request.get_json()
+        
+        if not data:
+            return jsonify({'error': 'Dados não fornecidos'}), 400
+        
+        # Validar dados
+        font_size = data.get('fontSize', 16)
+        two_columns = data.get('twoColumns', False)
+        view_mode = data.get('viewMode', 'chart')
+        theme = data.get('theme', 'light')
+        
+        # Validações
+        if not isinstance(font_size, (int, float)) or font_size < 12 or font_size > 24:
+            return jsonify({'error': 'Tamanho de fonte inválido'}), 400
+        
+        if view_mode not in ['chart', 'lyrics', 'both']:
+            return jsonify({'error': 'Modo de visualização inválido'}), 400
+        
+        if theme not in ['light', 'dark']:
+            return jsonify({'error': 'Tema inválido'}), 400
+        
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Verificar se já existem preferências para o usuário
+        cursor.execute('SELECT id FROM user_visual_preferences WHERE user_id = ?', (current_user.id,))
+        existing = cursor.fetchone()
+        
+        if existing:
+            # Atualizar preferências existentes
+            cursor.execute('''
+                UPDATE user_visual_preferences 
+                SET font_size = ?, two_columns = ?, view_mode = ?, theme = ?, updated_at = CURRENT_TIMESTAMP
+                WHERE user_id = ?
+            ''', (font_size, two_columns, view_mode, theme, current_user.id))
+        else:
+            # Criar novas preferências
+            cursor.execute('''
+                INSERT INTO user_visual_preferences (user_id, font_size, two_columns, view_mode, theme)
+                VALUES (?, ?, ?, ?, ?)
+            ''', (current_user.id, font_size, two_columns, view_mode, theme))
+        
+        conn.commit()
+        conn.close()
+        
+        security_logger.info(f"Preferências visuais salvas para usuário {current_user.username}")
+        
+        return jsonify({'message': 'Preferências salvas com sucesso'}), 200
+        
+    except Exception as e:
+        security_logger.error(f"Erro ao salvar preferências visuais: {str(e)}")
+        return jsonify({'error': 'Erro interno do servidor'}), 500
+
+@app.route('/api/get-visual-preferences', methods=['GET'])
+@token_required
+def get_visual_preferences():
+    """Recupera as preferências visuais do usuário"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute('''
+            SELECT font_size, two_columns, view_mode, theme 
+            FROM user_visual_preferences 
+            WHERE user_id = ?
+        ''', (current_user.id,))
+        
+        preferences = cursor.fetchone()
+        conn.close()
+        
+        if preferences:
+            return jsonify({
+                'fontSize': preferences[0],
+                'twoColumns': bool(preferences[1]),
+                'viewMode': preferences[2],
+                'theme': preferences[3]
+            }), 200
+        else:
+            # Retornar preferências padrão
+            return jsonify({
+                'fontSize': 16,
+                'twoColumns': False,
+                'viewMode': 'chart',
+                'theme': 'light'
+            }), 200
+            
+    except Exception as e:
+        security_logger.error(f"Erro ao recuperar preferências visuais: {str(e)}")
+        return jsonify({'error': 'Erro interno do servidor'}), 500
 
 @app.route('/<path:path>')
 def serve_static(path):

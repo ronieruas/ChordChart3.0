@@ -491,6 +491,9 @@
                         <input type="range" id="fullscreen-scroll-speed" min="0.5" max="3" step="0.1" value="1" title="Velocidade de rolagem">
                         <span id="fullscreen-speed-display">1x</span>
                     </div>
+                    <button id="fullscreen-settings-btn" title="Personalizar Visualização">
+                        <i class="fas fa-cog"></i>
+                    </button>
                 </div>
             </div>
         </main>
@@ -797,6 +800,57 @@
         </div>
         <div class="flex justify-end gap-4">
             <button type="button" class="cancel-btn py-2 px-4 bg-gray-200 rounded-md">Fechar</button>
+        </div>
+    </dialog>
+
+    <!-- Modal para Personalização Visual -->
+    <dialog id="fullscreen-visual-settings-modal" class="p-6 rounded-lg shadow-xl border w-full max-w-md">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-bold">Personalizar Visualização</h3>
+            <button class="cancel-btn text-2xl font-light">&times;</button>
+        </div>
+        <div class="space-y-4">
+            <!-- Tamanho da Fonte -->
+            <div>
+                <label class="block text-sm mb-2">Tamanho da Fonte:</label>
+                <div class="flex items-center gap-2">
+                    <button id="fs-font-decrease" class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">A-</button>
+                    <span id="fs-font-size-display" class="text-sm px-2">16px</span>
+                    <button id="fs-font-increase" class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">A+</button>
+                </div>
+            </div>
+            
+            <!-- Layout em 2 Colunas -->
+            <div class="flex items-center justify-between">
+                <label class="text-sm">Layout em 2 Colunas:</label>
+                <button id="fs-two-columns-toggle" class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">
+                    <i class="fas fa-columns"></i>
+                </button>
+            </div>
+            
+            <!-- Modo de Visualização -->
+            <div>
+                <label class="block text-sm mb-2">Modo de Visualização:</label>
+                <div class="flex gap-2">
+                    <button id="fs-view-chart" class="px-3 py-1 bg-blue-500 text-white rounded text-sm">Cifra</button>
+                    <button id="fs-view-lyrics" class="px-3 py-1 bg-gray-200 rounded text-sm">Letra</button>
+                    <button id="fs-view-both" class="px-3 py-1 bg-gray-200 rounded text-sm">Ambos</button>
+                </div>
+            </div>
+            
+            <!-- Tema/Cores -->
+            <div>
+                <label class="block text-sm mb-2">Tema:</label>
+                <div class="flex gap-2">
+                    <button id="fs-theme-light" class="px-3 py-1 bg-white border rounded text-sm">Claro</button>
+                    <button id="fs-theme-dark" class="px-3 py-1 bg-gray-800 text-white rounded text-sm">Escuro</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="flex justify-end gap-4 mt-6">
+            <button type="button" class="cancel-btn py-2 px-4 bg-gray-200 rounded-md">Cancelar</button>
+            <button id="save-visual-settings" class="py-2 px-4 bg-blue-600 text-white rounded-md">Salvar Preferências</button>
         </div>
     </dialog>
 
@@ -2513,6 +2567,16 @@
         updateJamNavButtons();
     }
     
+    // Função para garantir que os controles de jam session sejam mantidos
+    function ensureJamSessionControls() {
+        if (state.jamSession.active && document.fullscreenElement) {
+            const existingNav = document.querySelector('.jam-nav-controls');
+            if (!existingNav) {
+                showJamSessionControls();
+            }
+        }
+    }
+    
     function updateJamNavButtons() {
         const prevBtn = document.getElementById('jam-prev-btn');
         const nextBtn = document.getElementById('jam-next-btn');
@@ -2566,6 +2630,185 @@
         // Remover controles de navegação
         const navControls = document.querySelector('.jam-nav-controls');
         if (navControls) navControls.remove();
+    }
+    
+    // --- VISUAL CUSTOMIZATION FUNCTIONS ---
+    let currentFontSize = 16;
+    let currentTheme = 'light';
+    let currentTwoColumns = false;
+    let currentViewMode = 'chart';
+    
+    function loadCurrentVisualSettings() {
+        // Carregar configurações atuais da interface
+        currentFontSize = parseInt(getComputedStyle(document.documentElement).fontSize) || 16;
+        currentTwoColumns = state.isTwoColumns;
+        currentViewMode = state.currentView;
+        
+        // Atualizar display do modal
+        document.getElementById('fs-font-size-display').textContent = currentFontSize + 'px';
+        
+        // Atualizar botões de visualização
+        document.querySelectorAll('[id^="fs-view-"]').forEach(btn => btn.classList.remove('bg-blue-500', 'text-white'));
+        document.querySelectorAll('[id^="fs-view-"]').forEach(btn => btn.classList.add('bg-gray-200'));
+        document.getElementById(`fs-view-${currentViewMode}`).classList.remove('bg-gray-200');
+        document.getElementById(`fs-view-${currentViewMode}`).classList.add('bg-blue-500', 'text-white');
+        
+        // Atualizar botão de duas colunas
+        const twoColBtn = document.getElementById('fs-two-columns-toggle');
+        if (currentTwoColumns) {
+            twoColBtn.classList.remove('bg-gray-200');
+            twoColBtn.classList.add('bg-blue-500', 'text-white');
+        } else {
+            twoColBtn.classList.remove('bg-blue-500', 'text-white');
+            twoColBtn.classList.add('bg-gray-200');
+        }
+    }
+    
+    function adjustFontSize(delta) {
+        currentFontSize = Math.max(12, Math.min(24, currentFontSize + delta));
+        document.getElementById('fs-font-size-display').textContent = currentFontSize + 'px';
+        
+        // Aplicar temporariamente
+        document.documentElement.style.fontSize = currentFontSize + 'px';
+    }
+    
+    function toggleTwoColumnsInModal() {
+        currentTwoColumns = !currentTwoColumns;
+        const btn = document.getElementById('fs-two-columns-toggle');
+        
+        if (currentTwoColumns) {
+            btn.classList.remove('bg-gray-200');
+            btn.classList.add('bg-blue-500', 'text-white');
+            toggleTwoColumns(); // Aplicar mudança
+        } else {
+            btn.classList.remove('bg-blue-500', 'text-white');
+            btn.classList.add('bg-gray-200');
+            toggleTwoColumns(); // Aplicar mudança
+        }
+    }
+    
+    function setViewModeInModal(mode) {
+        currentViewMode = mode;
+        
+        // Atualizar botões
+        document.querySelectorAll('[id^="fs-view-"]').forEach(btn => {
+            btn.classList.remove('bg-blue-500', 'text-white');
+            btn.classList.add('bg-gray-200');
+        });
+        
+        document.getElementById(`fs-view-${mode}`).classList.remove('bg-gray-200');
+        document.getElementById(`fs-view-${mode}`).classList.add('bg-blue-500', 'text-white');
+        
+        // Aplicar mudança
+        if (mode === 'chart') toggleChartView();
+        else if (mode === 'lyrics') toggleLyricsView();
+        else if (mode === 'both') toggleBothView();
+    }
+    
+    function setThemeInModal(theme) {
+        currentTheme = theme;
+        
+        // Atualizar botões
+        document.querySelectorAll('[id^="fs-theme-"]').forEach(btn => {
+            btn.classList.remove('bg-blue-500', 'text-white', 'bg-gray-800');
+        });
+        
+        if (theme === 'light') {
+            document.getElementById('fs-theme-light').classList.add('bg-blue-500', 'text-white');
+            document.getElementById('fs-theme-dark').classList.add('bg-gray-200');
+        } else {
+            document.getElementById('fs-theme-dark').classList.add('bg-gray-800', 'text-white');
+            document.getElementById('fs-theme-light').classList.add('bg-gray-200');
+        }
+    }
+    
+    async function saveUserVisualPreferences() {
+        try {
+            const preferences = {
+                font_size: currentFontSize === 16 ? 'medium' : currentFontSize < 16 ? 'small' : 'large',
+                two_column_layout: currentTwoColumns,
+                view_mode: currentViewMode,
+                theme: currentTheme
+            };
+            
+            const response = await fetch('/api/save-visual-preferences', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(preferences)
+            });
+            
+            if (response.ok) {
+                // Marcar setlist como personalizado se estivermos em uma jam session
+                if (state.jamSession.active) {
+                    markSetlistAsCustomized();
+                }
+                
+                alert('Preferências salvas com sucesso!');
+                document.getElementById('fullscreen-visual-settings-modal').close();
+            } else {
+                throw new Error('Erro ao salvar preferências');
+            }
+        } catch (error) {
+            console.error('Erro ao salvar preferências visuais:', error);
+            alert('Erro ao salvar preferências. Tente novamente.');
+        }
+    }
+    
+    function markSetlistAsCustomized() {
+        // Adicionar indicador "Personalizado" ao nome do setlist
+        const setlistTitle = document.querySelector('.setlist-title, h1');
+        if (setlistTitle && !setlistTitle.textContent.includes('Personalizado')) {
+            setlistTitle.textContent += ' (Personalizado)';
+        }
+    }
+    
+    async function loadUserVisualPreferences() {
+        try {
+            const response = await fetch('/api/get-visual-preferences');
+            
+            if (response.ok) {
+                const preferences = await response.json();
+                
+                // Aplicar preferências carregadas
+                if (preferences.font_size) {
+                    currentFontSize = preferences.font_size === 'small' ? 14 : preferences.font_size === 'large' ? 18 : 16;
+                }
+                
+                if (preferences.two_column_layout !== undefined) {
+                    currentTwoColumns = preferences.two_column_layout;
+                }
+                
+                if (preferences.view_mode) {
+                    currentViewMode = preferences.view_mode;
+                }
+                
+                if (preferences.theme) {
+                    currentTheme = preferences.theme;
+                }
+                
+                // Atualizar interface com as preferências carregadas
+                loadCurrentSettings();
+                
+                console.log('Preferências visuais carregadas:', preferences);
+            } else {
+                // Se não há preferências salvas, usar padrões
+                console.log('Nenhuma preferência visual encontrada, usando padrões');
+            }
+        } catch (error) {
+            console.error('Erro ao carregar preferências visuais:', error);
+            // Fallback para localStorage
+            const savedPrefs = localStorage.getItem('visualPreferences');
+            if (savedPrefs) {
+                const preferences = JSON.parse(savedPrefs);
+                currentFontSize = preferences.fontSize || 16;
+                currentTwoColumns = preferences.twoColumns || false;
+                currentViewMode = preferences.viewMode || 'normal';
+                currentTheme = preferences.theme || 'light';
+                loadCurrentSettings();
+            }
+        }
     }
     
     // --- NOTIFICATIONS MODAL FUNCTIONS ---
@@ -2710,6 +2953,9 @@
 
     // --- INITIALIZATION ---
     document.addEventListener('DOMContentLoaded', () => {
+        // Carregar preferências visuais do usuário
+        loadUserVisualPreferences();
+        
         // Auth
         dom.loginForm.addEventListener('submit', handleLogin);
         dom.logoutBtn.addEventListener('click', handleLogout);
@@ -3122,6 +3368,37 @@
 
         // Password Visibility Toggle já está configurado acima
         // Removido event listener duplicado para evitar conflitos
+
+        // Modal de Personalização Visual
+        const fullscreenSettingsBtn = document.getElementById('fullscreen-settings-btn');
+        const fullscreenVisualModal = document.getElementById('fullscreen-visual-settings-modal');
+        const saveVisualSettingsBtn = document.getElementById('save-visual-settings');
+        
+        if (fullscreenSettingsBtn) {
+            fullscreenSettingsBtn.addEventListener('click', () => {
+                loadCurrentVisualSettings();
+                fullscreenVisualModal.showModal();
+            });
+        }
+        
+        if (fullscreenVisualModal) {
+            const cancelBtns = fullscreenVisualModal.querySelectorAll('.cancel-btn');
+            cancelBtns.forEach(btn => btn.addEventListener('click', () => fullscreenVisualModal.close()));
+        }
+        
+        if (saveVisualSettingsBtn) {
+            saveVisualSettingsBtn.addEventListener('click', saveUserVisualPreferences);
+        }
+        
+        // Event listeners para controles do modal
+        document.getElementById('fs-font-decrease')?.addEventListener('click', () => adjustFontSize(-1));
+        document.getElementById('fs-font-increase')?.addEventListener('click', () => adjustFontSize(1));
+        document.getElementById('fs-two-columns-toggle')?.addEventListener('click', toggleTwoColumnsInModal);
+        document.getElementById('fs-view-chart')?.addEventListener('click', () => setViewModeInModal('chart'));
+        document.getElementById('fs-view-lyrics')?.addEventListener('click', () => setViewModeInModal('lyrics'));
+        document.getElementById('fs-view-both')?.addEventListener('click', () => setViewModeInModal('both'));
+        document.getElementById('fs-theme-light')?.addEventListener('click', () => setThemeInModal('light'));
+        document.getElementById('fs-theme-dark')?.addEventListener('click', () => setThemeInModal('dark'));
 
         // Cifra padrão
         if (dom.songInput.value.trim() === "") { dom.songInput.value = `[Intro]\nG D Em C\n\n[Verso 1]\n   G              D\nVim para adorar-te\n   Em             C\nVim para prostrar-me\nG              D           C\nVim para dizer que és meu Deus`; }
